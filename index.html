@@ -342,6 +342,11 @@
     background: var(--border);
   }
 
+  .btn-small {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
   .dimensions-display {
     font-size: 0.7rem;
     color: var(--text-dim);
@@ -355,6 +360,42 @@
     color: var(--text-dim);
     font-style: italic;
     padding: 4px 0;
+  }
+
+  .logo-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 150ms ease-out;
+  }
+
+  .logo-upload-area:hover {
+    border-color: var(--accent);
+  }
+
+  .logo-upload-area.has-logo {
+    border-style: solid;
+    padding: 8px;
+  }
+
+  .logo-upload-area img {
+    max-width: 80px;
+    max-height: 60px;
+    display: block;
+    margin: 0 auto 8px;
+  }
+
+  .logo-upload-area p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .logo-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   @media (max-width: 768px) {
@@ -452,7 +493,7 @@
 
     <div class="panel-section">
       <h3>Layout</h3>
-      <p class="hint">Drag name and number on canvas to reposition. Snaps to grid.</p>
+      <p class="hint">Drag name, number, or logo on canvas to reposition. Snaps to grid.</p>
       <div class="slider-field">
         <div class="slider-header">
           <label>Name Arc</label>
@@ -476,6 +517,20 @@
       </div>
       <div class="slider-field">
         <div class="slider-header">
+          <label>Name Letter Spacing</label>
+          <span id="nameSpacingValue">0px</span>
+        </div>
+        <input type="range" id="nameSpacing" min="-10" max="40" value="0">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Number Letter Spacing</label>
+          <span id="numberSpacingValue">0px</span>
+        </div>
+        <input type="range" id="numberSpacing" min="-10" max="60" value="0">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
           <label>Outline Thickness</label>
           <span id="outlineThicknessValue">4%</span>
         </div>
@@ -491,6 +546,24 @@
       <div class="toggle-row">
         <label>Show Grid</label>
         <div class="toggle" id="gridToggle"></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Logo</h3>
+      <div class="logo-upload-area" id="logoUploadArea">
+        <p>Click or drag to upload PL logo</p>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Logo Size</label>
+          <span id="logoSizeValue">8%</span>
+        </div>
+        <input type="range" id="logoSize" min="3" max="20" value="8">
+      </div>
+      <div class="logo-controls" id="logoControls" style="display:none">
+        <button class="btn btn-secondary btn-small" onclick="removeLogo()">Remove Logo</button>
       </div>
     </div>
 
@@ -512,11 +585,8 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var wrapper = document.getElementById('canvasWrapper');
 
-// PL-style font: we load a custom font that matches the Premier League aesthetic
-// Using a web-safe fallback stack that's bold and condensed
+// PL-style font
 var PL_FONT = 'PLFont';
-
-// Load a custom font face that mimics PL nameset style (bold, condensed, blocky)
 var fontFace = new FontFace('PLFont', "url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8.woff2')", {
   weight: 'normal',
   style: 'normal'
@@ -540,20 +610,25 @@ var state = {
   arc: 25,
   nameSize: 13,
   numberSize: 55,
+  nameSpacing: 0,
+  numberSpacing: 0,
   outlineThickness: 4,
   gridSize: 20,
   showGrid: false,
-  // Positions as percentage of canvas (center point)
   nameX: 50,
   nameY: 20,
   numberX: 50,
-  numberY: 58
+  numberY: 58,
+  logoImage: null,
+  logoX: 50,
+  logoY: 82,
+  logoSize: 8
 };
 
 // Drag state
 var drag = {
   active: false,
-  target: null, // 'name' or 'number'
+  target: null,
   offsetX: 0,
   offsetY: 0
 };
@@ -573,8 +648,11 @@ bindInput('playerNumber', 'number');
 bindInput('nameArc', 'arc', Number);
 bindInput('nameSize', 'nameSize', Number);
 bindInput('numberSize', 'numberSize', Number);
+bindInput('nameSpacing', 'nameSpacing', Number);
+bindInput('numberSpacing', 'numberSpacing', Number);
 bindInput('outlineThickness', 'outlineThickness', Number);
 bindInput('gridSize', 'gridSize', Number);
+bindInput('logoSize', 'logoSize', Number);
 
 // Color sync helper
 function syncColor(pickerId, hexId, stateKey) {
@@ -648,12 +726,79 @@ document.getElementById('nameSize').addEventListener('input', function() {
 document.getElementById('numberSize').addEventListener('input', function() {
   document.getElementById('numberSizeValue').textContent = this.value + '%';
 });
+document.getElementById('nameSpacing').addEventListener('input', function() {
+  document.getElementById('nameSpacingValue').textContent = this.value + 'px';
+});
+document.getElementById('numberSpacing').addEventListener('input', function() {
+  document.getElementById('numberSpacingValue').textContent = this.value + 'px';
+});
 document.getElementById('outlineThickness').addEventListener('input', function() {
   document.getElementById('outlineThicknessValue').textContent = this.value + '%';
 });
 document.getElementById('gridSize').addEventListener('input', function() {
   document.getElementById('gridSizeValue').textContent = this.value + 'px';
 });
+document.getElementById('logoSize').addEventListener('input', function() {
+  document.getElementById('logoSizeValue').textContent = this.value + '%';
+});
+
+// Logo upload
+var logoUploadArea = document.getElementById('logoUploadArea');
+var logoFileInput = document.getElementById('logoFileInput');
+var logoControls = document.getElementById('logoControls');
+
+logoUploadArea.addEventListener('click', function() {
+  logoFileInput.click();
+});
+
+logoUploadArea.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  logoUploadArea.style.borderColor = 'var(--accent)';
+});
+
+logoUploadArea.addEventListener('dragleave', function() {
+  logoUploadArea.style.borderColor = '';
+});
+
+logoUploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  logoUploadArea.style.borderColor = '';
+  var file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    loadLogoFile(file);
+  }
+});
+
+logoFileInput.addEventListener('change', function() {
+  if (this.files[0]) {
+    loadLogoFile(this.files[0]);
+  }
+});
+
+function loadLogoFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      state.logoImage = img;
+      logoUploadArea.classList.add('has-logo');
+      logoUploadArea.innerHTML = '<img src="' + e.target.result + '"><p>' + file.name + '</p>';
+      logoControls.style.display = 'flex';
+      render();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  state.logoImage = null;
+  logoUploadArea.classList.remove('has-logo');
+  logoUploadArea.innerHTML = '<p>Click or drag to upload PL logo</p>';
+  logoControls.style.display = 'none';
+  logoFileInput.value = '';
+  render();
+}
 
 // Snap to grid
 function snapToGrid(value, gridSize) {
@@ -681,10 +826,21 @@ function getCanvasPos(e) {
   };
 }
 
-// Hit test: check if point is near name or number
+// Hit test
 function hitTest(px, py) {
   var w = state.width;
   var h = state.height;
+
+  // Logo hit area (check first, it's smallest)
+  if (state.logoImage) {
+    var logoX = (state.logoX / 100) * w;
+    var logoY = (state.logoY / 100) * h;
+    var logoH = (state.logoSize / 100) * h;
+    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
+    if (px > logoX - logoW/2 - 10 && px < logoX + logoW/2 + 10 && py > logoY - logoH/2 - 10 && py < logoY + logoH/2 + 10) {
+      return 'logo';
+    }
+  }
 
   // Number hit area
   var numX = (state.numberX / 100) * w;
@@ -740,64 +896,86 @@ function moveDrag(e) {
   var rawX = pos.x - drag.offsetX;
   var rawY = pos.y - drag.offsetY;
 
-  // Snap to grid
   var grid = state.gridSize;
   var snappedX = snapToGrid(rawX, grid);
   var snappedY = snapToGrid(rawY, grid);
 
-  // Always snap X to center (50%) if within threshold
+  // Snap to center X if close
   var centerX = state.width / 2;
   if (Math.abs(snappedX - centerX) < grid * 1.5) {
     snappedX = centerX;
   }
 
-  // Convert back to percentage
   state[drag.target + 'X'] = (snappedX / state.width) * 100;
   state[drag.target + 'Y'] = (snappedY / state.height) * 100;
 
   render();
 }
 
-function endDrag(e) {
+function endDrag() {
   drag.active = false;
   drag.target = null;
 }
 
-// Draw arced text with outline
-function drawArcText(text, centerX, centerY, radius, arcAngle, fontSize) {
+// Draw text with letter spacing (manual character-by-character rendering)
+function drawTextWithSpacing(text, x, y, spacing, align) {
+  if (!text) return;
+  if (spacing === 0) {
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    if (state.showOutline) {
+      ctx.strokeText(text, x, y);
+    }
+    ctx.fillText(text, x, y);
+    return;
+  }
+
+  var chars = text.split('');
+  var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
+  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
+
+  var startX = x - totalWidth / 2;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+
+  chars.forEach(function(char, i) {
+    if (state.showOutline) {
+      ctx.strokeText(char, startX, y);
+    }
+    ctx.fillText(char, startX, y);
+    startX += charWidths[i] + spacing;
+  });
+}
+
+// Draw arced text with letter spacing and outline
+function drawArcText(text, centerX, centerY, radius, arcAngle, spacing) {
   if (!text) return;
 
   if (arcAngle === 0) {
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    if (state.showOutline) {
-      ctx.strokeText(text, centerX, centerY);
-    }
-    ctx.fillText(text, centerX, centerY);
+    drawTextWithSpacing(text, centerX, centerY, spacing, 'center');
     return;
   }
 
   var totalAngle = (arcAngle * Math.PI) / 180;
   var chars = text.split('');
-
   var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
-  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0);
+  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
 
-  var anglePerWidth = totalAngle / totalWidth;
+  var anglePerPixel = totalAngle / totalWidth;
   var currentAngle = -Math.PI / 2 - totalAngle / 2;
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   chars.forEach(function(char, i) {
-    var halfCharAngle = (charWidths[i] / 2) * anglePerWidth;
+    var halfCharAngle = (charWidths[i] / 2) * anglePerPixel;
     currentAngle += halfCharAngle;
 
-    var x = centerX + radius * Math.cos(currentAngle);
-    var y = centerY + radius * Math.sin(currentAngle);
+    var charX = centerX + radius * Math.cos(currentAngle);
+    var charY = centerY + radius * Math.sin(currentAngle);
 
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(charX, charY);
     ctx.rotate(currentAngle + Math.PI / 2);
     if (state.showOutline) {
       ctx.strokeText(char, 0, 0);
@@ -805,7 +983,7 @@ function drawArcText(text, centerX, centerY, radius, arcAngle, fontSize) {
     ctx.fillText(char, 0, 0);
     ctx.restore();
 
-    currentAngle += halfCharAngle;
+    currentAngle += halfCharAngle + spacing * anglePerPixel;
   });
 }
 
@@ -821,7 +999,6 @@ function drawGrid() {
   ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
   ctx.lineWidth = 1;
 
-  // Vertical lines
   for (var x = grid; x < w; x += grid) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
@@ -829,7 +1006,6 @@ function drawGrid() {
     ctx.stroke();
   }
 
-  // Horizontal lines
   for (var y = grid; y < h; y += grid) {
     ctx.beginPath();
     ctx.moveTo(0, y);
@@ -837,18 +1013,16 @@ function drawGrid() {
     ctx.stroke();
   }
 
-  // Center lines (stronger)
+  // Center lines
   ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 4]);
 
-  // Vertical center
   ctx.beginPath();
   ctx.moveTo(w / 2, 0);
   ctx.lineTo(w / 2, h);
   ctx.stroke();
 
-  // Horizontal center
   ctx.beginPath();
   ctx.moveTo(0, h / 2);
   ctx.lineTo(w, h / 2);
@@ -869,7 +1043,6 @@ function render() {
     ctx.fillRect(0, 0, w, h);
   }
 
-  // Draw grid (only visible on screen, not in export)
   drawGrid();
 
   // Configure text style
@@ -881,7 +1054,7 @@ function render() {
   ctx.lineJoin = 'round';
   ctx.miterLimit = 2;
 
-  // Draw name (arced)
+  // Draw name
   var nameFontSize = (state.nameSize / 100) * w;
   ctx.font = nameFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
 
@@ -889,42 +1062,39 @@ function render() {
   var nameY = (state.nameY / 100) * h;
 
   if (state.arc > 0) {
-    var textWidth = ctx.measureText(state.name).width;
+    var textWidth = ctx.measureText(state.name).width + state.nameSpacing * (state.name.length - 1);
     var arcRad = (state.arc * Math.PI) / 180;
     var radius = textWidth / arcRad * 1.2;
     var arcCenterY = nameY + radius;
 
-    drawArcText(state.name, nameX, arcCenterY, radius, state.arc, nameFontSize);
+    drawArcText(state.name, nameX, arcCenterY, radius, state.arc, state.nameSpacing);
   } else {
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    if (state.showOutline) {
-      ctx.strokeText(state.name, nameX, nameY);
-    }
-    ctx.fillText(state.name, nameX, nameY);
+    drawTextWithSpacing(state.name, nameX, nameY, state.nameSpacing, 'center');
   }
 
   // Draw number
   var numFontSize = (state.numberSize / 100) * h;
   ctx.font = numFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.lineWidth = outlineWidth * 1.2;
 
   var numX = (state.numberX / 100) * w;
   var numY = (state.numberY / 100) * h;
 
-  // Recalculate outline for number (proportional to number size)
-  ctx.lineWidth = outlineWidth * 1.2;
+  drawTextWithSpacing(state.number, numX, numY, state.numberSpacing, 'center');
 
-  if (state.showOutline) {
-    ctx.strokeText(state.number, numX, numY);
+  // Draw logo
+  if (state.logoImage) {
+    var logoH = (state.logoSize / 100) * h;
+    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
+    var logoX = (state.logoX / 100) * w - logoW / 2;
+    var logoY = (state.logoY / 100) * h - logoH / 2;
+
+    ctx.drawImage(state.logoImage, logoX, logoY, logoW, logoH);
   }
-  ctx.fillText(state.number, numX, numY);
 }
 
-// Export (without grid)
+// Export
 function exportImage(format) {
-  // Temporarily hide grid for export
   var gridWasVisible = state.showGrid;
   state.showGrid = false;
   render();
@@ -963,7 +1133,6 @@ function exportImage(format) {
   link.click();
   document.body.removeChild(link);
 
-  // Restore grid
   state.showGrid = gridWasVisible;
   render();
 }
@@ -988,9 +1157,12 @@ function generateSVG() {
   var strokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + outlineWidth + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
   var numStrokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (outlineWidth * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
 
+  var nameLetterSpacing = state.nameSpacing > 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
+  var numLetterSpacing = state.numberSpacing > 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
+
   var nameElement = '';
   if (state.arc > 0 && state.name) {
-    var textWidth = nameFontSize * state.name.length * 0.6;
+    var textWidth = nameFontSize * state.name.length * 0.6 + state.nameSpacing * (state.name.length - 1);
     var arcRad = (state.arc * Math.PI) / 180;
     var radius = textWidth / arcRad * 1.2;
 
@@ -1007,15 +1179,34 @@ function generateSVG() {
     var largeArc = arcRad > Math.PI ? 1 : 0;
 
     nameElement = '<defs><path id="namePath" d="M ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + '"/></defs>' +
-      '<text font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + '>' +
+      '<text font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLetterSpacing + '>' +
       '<textPath href="#namePath" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
   } else {
-    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
+    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLetterSpacing + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
   }
 
-  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
+  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + numLetterSpacing + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
 
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n  ' + bgRect + '\n  ' + nameElement + '\n  ' + numberElement + '\n</svg>';
+  // Logo as embedded image in SVG
+  var logoElement = '';
+  if (state.logoImage) {
+    var logoH = (state.logoSize / 100) * h;
+    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
+    var lx = (state.logoX / 100) * w - logoW / 2;
+    var ly = (state.logoY / 100) * h - logoH / 2;
+
+    // Get base64 from a temp canvas
+    var tc = document.createElement('canvas');
+    tc.width = state.logoImage.width;
+    tc.height = state.logoImage.height;
+    var tctx = tc.getContext('2d');
+    tctx.drawImage(state.logoImage, 0, 0);
+    var dataUrl = tc.toDataURL('image/png');
+
+    logoElement = '<image href="' + dataUrl + '" x="' + lx + '" y="' + ly + '" width="' + logoW + '" height="' + logoH + '"/>';
+  }
+
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n  ' + bgRect + '\n  ' + nameElement + '\n  ' + numberElement + '\n  ' + logoElement + '\n</svg>';
 }
 
 // Initial render
