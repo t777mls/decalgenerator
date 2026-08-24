@@ -96,6 +96,7 @@
     max-width: 100%;
     height: auto;
     cursor: grab;
+    touch-action: none;
   }
 
   canvas:active {
@@ -635,7 +636,7 @@ var state = {
   logoSize: 8
 };
 
-// Snap guides state (for visual feedback)
+// Snap guides state
 var snapGuides = {
   centerX: false,
   centerY: false
@@ -648,6 +649,16 @@ var drag = {
   offsetX: 0,
   offsetY: 0
 };
+
+// Detect iOS/iPadOS for share sheet
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function canWebShare() {
+  return navigator.share && navigator.canShare;
+}
 
 // Bind inputs
 function bindInput(id, key, transform) {
@@ -825,7 +836,7 @@ function centerAll() {
   render();
 }
 
-// Snap value to grid (only if snap enabled)
+// Snap value to grid
 function snapValue(value, gridSize) {
   if (!state.snapToGrid) return value;
   return Math.round(value / gridSize) * gridSize;
@@ -897,7 +908,7 @@ function hitTest(px, py) {
 canvas.addEventListener('mousedown', startDrag);
 canvas.addEventListener('touchstart', startDrag);
 document.addEventListener('mousemove', moveDrag);
-document.addEventListener('touchmove', moveDrag);
+document.addEventListener('touchmove', moveDrag, { passive: false });
 document.addEventListener('mouseup', endDrag);
 document.addEventListener('touchend', endDrag);
 
@@ -922,12 +933,11 @@ function moveDrag(e) {
   var rawX = pos.x - drag.offsetX;
   var rawY = pos.y - drag.offsetY;
 
-  // Apply grid snap if enabled
   var grid = state.gridSize;
   var finalX = state.snapToGrid ? snapValue(rawX, grid) : rawX;
   var finalY = state.snapToGrid ? snapValue(rawY, grid) : rawY;
 
-  // Check proximity to center for visual guide (not forced)
+  // Check proximity to center for visual guide
   var centerX = state.width / 2;
   var centerY = state.height / 2;
   var snapThreshold = grid * 0.75;
@@ -935,7 +945,7 @@ function moveDrag(e) {
   snapGuides.centerX = Math.abs(finalX - centerX) < snapThreshold;
   snapGuides.centerY = Math.abs(finalY - centerY) < snapThreshold;
 
-  // Gentle center snap: only snap if VERY close (within half a grid unit)
+  // Gentle center snap
   if (snapGuides.centerX && state.snapToGrid) {
     finalX = centerX;
   }
@@ -943,7 +953,6 @@ function moveDrag(e) {
     finalY = centerY;
   }
 
-  // Convert to percentage (no clamping, full freedom)
   state[drag.target + 'X'] = (finalX / state.width) * 100;
   state[drag.target + 'Y'] = (finalY / state.height) * 100;
 
@@ -1053,7 +1062,6 @@ function drawGrid() {
       ctx.stroke();
     }
 
-    // Center crosshair (always shown with grid)
     ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 4]);
@@ -1158,16 +1166,14 @@ function render() {
   }
 }
 
-// Export
+// Export with Web Share API support for iOS
 function exportImage(format) {
   var gridWasVisible = state.showGrid;
-  var snapWasVisible = snapGuides.centerX || snapGuides.centerY;
   state.showGrid = false;
   snapGuides.centerX = false;
   snapGuides.centerY = false;
   render();
 
-  var link = document.createElement('a');
   var name = state.name || 'nameset';
   var num = state.number || '';
   var filename = (name + '_' + num).replace(/\s+/g, '_');
@@ -1175,34 +1181,93 @@ function exportImage(format) {
   if (format === 'svg') {
     var svg = generateSVG();
     var blob = new Blob([svg], { type: 'image/svg+xml' });
-    link.href = URL.createObjectURL(blob);
-    link.download = filename + '.svg';
+
+    if (canWebShare()) {
+      var file = new File([blob], filename + '.svg', { type: 'image/svg+xml' });
+      shareFile(file);
+    } else {
+      downloadBlob(blob, filename + '.svg');
+    }
   } else {
     var mimeType = 'image/png';
-    if (format === 'jpeg') mimeType = 'image/jpeg';
-    if (format === 'webp') mimeType = 'image/webp';
+    var ext = 'png';
+    if (format === 'jpeg') { mimeType = 'image/jpeg'; ext = 'jpg'; }
+    if (format === 'webp') { mimeType = 'image/webp'; ext = 'webp'; }
 
+    var exportCanvas = canvas;
+
+    // For JPEG, add white bg if transparent
     if (format === 'jpeg' && state.transparent) {
-      var tempCanvas = document.createElement('canvas');
-      tempCanvas.width = state.width;
-      tempCanvas.height = state.height;
-      var tempCtx = tempCanvas.getContext('2d');
+      exportCanvas = document.createElement('canvas');
+      exportCanvas.width = state.width;
+      exportCanvas.height = state.height;
+      var tempCtx = exportCanvas.getContext('2d');
       tempCtx.fillStyle = '#ffffff';
       tempCtx.fillRect(0, 0, state.width, state.height);
       tempCtx.drawImage(canvas, 0, 0);
-      link.href = tempCanvas.toDataURL(mimeType, 0.95);
-    } else {
-      link.href = canvas.toDataURL(mimeType, 0.95);
     }
-    link.download = filename + '.' + format;
-  }
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    exportCanvas.toBlob(function(blob) {
+      if (!blob) {
+        // Fallback for unsupported formats (e.g. webp on older Safari)
+        fallbackExport(exportCanvas, mimeType, filename + '.' + ext);
+        state.showGrid = gridWasVisible;
+        render();
+        return;
+      }
+
+      if (canWebShare()) {
+        var file = new File([blob], filename + '.' + ext, { type: mimeType });
+        shareFile(file);
+      } else {
+        downloadBlob(blob, filename + '.' + ext);
+      }
+    }, mimeType, 0.95);
+  }
 
   state.showGrid = gridWasVisible;
   render();
+}
+
+function shareFile(file) {
+  var shareData = { files: [file] };
+
+  if (navigator.canShare(shareData)) {
+    navigator.share(shareData).catch(function(err) {
+      // User cancelled share, that's fine
+      if (err.name !== 'AbortError') {
+        // Fallback to download
+        downloadBlob(file, file.name);
+      }
+    });
+  } else {
+    // Can't share this file type, fall back to download
+    downloadBlob(file, file.name);
+  }
+}
+
+function downloadBlob(blob, filename) {
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function fallbackExport(sourceCanvas, mimeType, filename) {
+  // For browsers that don't support toBlob for the given format,
+  // fall back to PNG
+  sourceCanvas.toBlob(function(blob) {
+    if (canWebShare()) {
+      var file = new File([blob], filename.replace(/\.\w+$/, '.png'), { type: 'image/png' });
+      shareFile(file);
+    } else {
+      downloadBlob(blob, filename.replace(/\.\w+$/, '.png'));
+    }
+  }, 'image/png');
 }
 
 function generateSVG() {
