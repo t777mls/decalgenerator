@@ -99,9 +99,7 @@
     touch-action: none;
   }
 
-  canvas:active {
-    cursor: grabbing;
-  }
+  canvas:active { cursor: grabbing; }
 
   .panel {
     border-left: 1px solid var(--border);
@@ -153,335 +151,149 @@
   }
 
   .field input:focus,
-  .field select:focus {
-    border-color: var(--accent);
-  }
+  .field select:focus { border-color: var(--accent); }
 
-  .field input[type="number"] {
-    width: 100%;
-  }
+  .field input[type="number"] { width: 100%; }
 
-  .row {
-    display: flex;
-    gap: 8px;
-  }
+  .row { display: flex; gap: 8px; }
+  .row .field { flex: 1; }
 
-  .row .field {
-    flex: 1;
-  }
-
-  .color-field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .color-field { display: flex; align-items: center; gap: 8px; }
 
   .color-field input[type="color"] {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
-    padding: 2px;
-    background: var(--surface);
+    border-radius: 6px; cursor: pointer;
+    padding: 2px; background: var(--surface);
   }
 
-  .color-field input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-  }
-
-  .color-field input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 4px;
-  }
-
-  .color-field input[type="text"] {
-    flex: 1;
-  }
+  .color-field input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  .color-field input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+  .color-field input[type="text"] { flex: 1; }
 
   .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 0;
+    display: flex; align-items: center;
+    justify-content: space-between; padding: 4px 0;
   }
 
-  .toggle-row label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-dim);
-  }
+  .toggle-row label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); }
 
   .toggle {
-    width: 40px;
-    height: 22px;
+    width: 40px; height: 22px;
     background: var(--surface-raised);
     border: 1px solid var(--border);
-    border-radius: 11px;
-    cursor: pointer;
-    position: relative;
-    transition: background 200ms ease-out;
+    border-radius: 11px; cursor: pointer;
+    position: relative; transition: background 200ms ease-out;
   }
 
-  .toggle.active {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
+  .toggle.active { background: var(--accent); border-color: var(--accent); }
 
   .toggle::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    background: var(--text);
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
+    content: ''; position: absolute;
+    width: 16px; height: 16px;
+    background: var(--text); border-radius: 50%;
+    top: 2px; left: 2px;
     transition: transform 200ms ease-out;
   }
 
-  .toggle.active::after {
-    transform: translateX(18px);
-  }
+  .toggle.active::after { transform: translateX(18px); }
 
-  .slider-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .slider-field .slider-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .slider-field .slider-header label {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-dim);
-  }
-
-  .slider-field .slider-header span {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    font-variant-numeric: tabular-nums;
-  }
+  .slider-field { display: flex; flex-direction: column; gap: 6px; }
+  .slider-field .slider-header { display: flex; justify-content: space-between; align-items: center; }
+  .slider-field .slider-header label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); }
+  .slider-field .slider-header span { font-size: 0.75rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
   .slider-field input[type="range"] {
-    width: 100%;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
+    width: 100%; height: 4px;
+    -webkit-appearance: none; appearance: none;
     background: var(--surface-raised);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
+    border-radius: 2px; outline: none; cursor: pointer;
   }
 
   .slider-field input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
+    width: 14px; height: 14px;
+    background: var(--accent); border-radius: 50%; cursor: pointer;
   }
 
   .export-section {
-    margin-top: auto;
-    padding-top: 16px;
+    margin-top: auto; padding-top: 16px;
     border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: flex; flex-direction: column; gap: 8px;
   }
 
   .export-section h3 {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    margin-bottom: 4px;
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); margin-bottom: 4px;
   }
 
-  .export-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
+  .export-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
   .btn {
-    padding: 10px 16px;
-    border-radius: 6px;
-    border: none;
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 150ms ease-out;
-    text-align: center;
+    padding: 10px 16px; border-radius: 6px; border: none;
+    font-family: inherit; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 150ms ease-out; text-align: center;
   }
 
-  .btn-primary {
-    background: var(--accent);
-    color: #1a1a2e;
-  }
+  .btn-primary { background: var(--accent); color: #1a1a2e; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-small { padding: 6px 12px; font-size: 0.75rem; }
 
-  .btn-primary:hover {
-    background: var(--accent-hover);
-  }
-
-  .btn-secondary {
-    background: var(--surface-raised);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-secondary:hover {
-    background: var(--border);
-  }
-
-  .btn-small {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-  }
-
-  .btn-danger {
-    background: #4a2030;
-    color: #f08080;
-    border: 1px solid #5a2838;
-  }
-
-  .btn-danger:hover {
-    background: #5a2838;
-  }
-
-  .dimensions-display {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    text-align: center;
-    padding: 4px 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    font-style: italic;
-    padding: 4px 0;
-  }
-
-  .logo-preset-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .logo-preset-row select {
-    flex: 1;
-  }
+  .dimensions-display { font-size: 0.7rem; color: var(--text-dim); text-align: center; padding: 4px 0; font-variant-numeric: tabular-nums; }
+  .hint { font-size: 0.7rem; color: var(--text-dim); font-style: italic; padding: 4px 0; }
 
   .logo-upload-area {
-    border: 2px dashed var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    cursor: pointer;
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 12px; text-align: center; cursor: pointer;
     transition: border-color 150ms ease-out;
   }
+  .logo-upload-area:hover { border-color: var(--accent); }
+  .logo-upload-area p { font-size: 0.75rem; color: var(--text-dim); }
 
-  .logo-upload-area:hover {
-    border-color: var(--accent);
-  }
+  .logo-controls { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  .logo-upload-area p {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-  }
+  .saved-logos-list, .saved-profiles-list { display: flex; flex-direction: column; gap: 4px; }
 
-  .logo-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .saved-logos-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .saved-logo-item {
-    display: flex;
-    align-items: center;
+  .saved-logo-item, .saved-profile-item {
+    display: flex; align-items: center;
     justify-content: space-between;
-    padding: 6px 8px;
-    background: var(--surface);
-    border-radius: 4px;
-    font-size: 0.75rem;
+    padding: 6px 8px; background: var(--surface);
+    border-radius: 4px; font-size: 0.75rem;
   }
 
-  .saved-logo-item span {
-    color: var(--text-dim);
+  .saved-logo-item span, .saved-profile-item span { color: var(--text-dim); }
+
+  .saved-logo-item button, .saved-profile-item button {
+    background: none; border: none;
+    color: #f08080; cursor: pointer;
+    font-size: 0.7rem; padding: 2px 6px;
   }
 
-  .saved-logo-item button {
-    background: none;
-    border: none;
-    color: #f08080;
-    cursor: pointer;
-    font-size: 0.7rem;
-    padding: 2px 6px;
-  }
+  .saved-profile-item .profile-actions { display: flex; gap: 4px; }
+  .saved-profile-item .profile-load { color: var(--accent); }
 
-  .center-btn {
-    margin-top: 4px;
-  }
+  .center-btn { margin-top: 4px; }
 
-  .color-toggle-group {
-    display: flex;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
+  .color-toggle-group { display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
   .color-toggle-group button {
-    flex: 1;
-    padding: 6px 12px;
-    border: none;
-    background: var(--surface);
-    color: var(--text-dim);
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 150ms ease-out;
+    flex: 1; padding: 6px 12px; border: none;
+    background: var(--surface); color: var(--text-dim);
+    font-family: inherit; font-size: 0.75rem; font-weight: 500;
+    cursor: pointer; transition: all 150ms ease-out;
   }
+  .color-toggle-group button.active { background: var(--accent); color: #1a1a2e; }
 
-  .color-toggle-group button.active {
-    background: var(--accent);
-    color: #1a1a2e;
-  }
+  .profile-row { display: flex; gap: 8px; }
+  .profile-row .field { flex: 1; }
+  .profile-row .btn { align-self: flex-end; }
 
   @media (max-width: 768px) {
-    .app {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto 1fr auto;
-      height: auto;
-      min-height: 100vh;
-    }
-
-    .panel {
-      border-left: none;
-      border-top: 1px solid var(--border);
-      max-height: 50vh;
-    }
-
-    .canvas-area {
-      min-height: 300px;
-    }
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; height: auto; min-height: 100vh; }
+    .panel { border-left: none; border-top: 1px solid var(--border); max-height: 50vh; }
+    .canvas-area { min-height: 300px; }
   }
 </style>
 </head>
@@ -499,6 +311,24 @@
   </div>
 
   <aside class="panel">
+    <div class="panel-section">
+      <h3>Profiles</h3>
+      <div class="field">
+        <label>Load Profile</label>
+        <select id="profileSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div class="profile-row">
+        <div class="field">
+          <label>Save Current As</label>
+          <input type="text" id="profileNameInput" placeholder="e.g. Home Kit 23/24">
+        </div>
+        <button class="btn btn-primary btn-small" style="align-self:flex-end;margin-bottom:1px;" onclick="saveProfile()">Save</button>
+      </div>
+      <div class="saved-profiles-list" id="savedProfilesList"></div>
+    </div>
+
     <div class="panel-section">
       <h3>Text</h3>
       <div class="field">
@@ -563,72 +393,43 @@
       <p class="hint">Drag name, number, and each logo independently.</p>
       <button class="btn btn-secondary btn-small center-btn" onclick="centerAll()">Centre All Horizontally</button>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Name Arc</label>
-          <span id="arcValue">25&deg;</span>
-        </div>
+        <div class="slider-header"><label>Name Arc</label><span id="arcValue">25&deg;</span></div>
         <input type="range" id="nameArc" min="0" max="80" value="25">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Name Size</label>
-          <span id="nameSizeValue">13%</span>
-        </div>
+        <div class="slider-header"><label>Name Size</label><span id="nameSizeValue">13%</span></div>
         <input type="range" id="nameSize" min="6" max="30" value="13">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Number Size</label>
-          <span id="numberSizeValue">55%</span>
-        </div>
+        <div class="slider-header"><label>Number Size</label><span id="numberSizeValue">55%</span></div>
         <input type="range" id="numberSize" min="30" max="80" value="55">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Name Letter Spacing</label>
-          <span id="nameSpacingValue">0px</span>
-        </div>
+        <div class="slider-header"><label>Name Letter Spacing</label><span id="nameSpacingValue">0px</span></div>
         <input type="range" id="nameSpacing" min="-10" max="40" value="0">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Number Letter Spacing</label>
-          <span id="numberSpacingValue">0px</span>
-        </div>
+        <div class="slider-header"><label>Number Letter Spacing</label><span id="numberSpacingValue">0px</span></div>
         <input type="range" id="numberSpacing" min="-10" max="60" value="0">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Outline Thickness</label>
-          <span id="outlineThicknessValue">4%</span>
-        </div>
+        <div class="slider-header"><label>Outline Thickness</label><span id="outlineThicknessValue">4%</span></div>
         <input type="range" id="outlineThickness" min="1" max="12" value="4">
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Grid Size</label>
-          <span id="gridSizeValue">20px</span>
-        </div>
+        <div class="slider-header"><label>Grid Size</label><span id="gridSizeValue">20px</span></div>
         <input type="range" id="gridSize" min="5" max="50" value="20">
       </div>
-      <div class="toggle-row">
-        <label>Show Grid</label>
-        <div class="toggle" id="gridToggle"></div>
-      </div>
-      <div class="toggle-row">
-        <label>Snap to Grid</label>
-        <div class="toggle active" id="snapToggle"></div>
-      </div>
+      <div class="toggle-row"><label>Show Grid</label><div class="toggle" id="gridToggle"></div></div>
+      <div class="toggle-row"><label>Snap to Grid</label><div class="toggle active" id="snapToggle"></div></div>
     </div>
 
     <div class="panel-section">
       <h3>Logos (per digit)</h3>
-      <p class="hint">Each logo is draggable independently. Upload once per preset, saved to this device permanently.</p>
+      <p class="hint">Each logo is draggable independently.</p>
       <div class="field">
         <label>Select Logo</label>
-        <select id="logoPresetSelect">
-          <option value="none">None</option>
-        </select>
+        <select id="logoPresetSelect"><option value="none">None</option></select>
       </div>
       <div class="field">
         <label>Logo Color</label>
@@ -638,17 +439,13 @@
         </div>
       </div>
       <div class="slider-field">
-        <div class="slider-header">
-          <label>Logo Size</label>
-          <span id="logoSizeValue">8%</span>
-        </div>
+        <div class="slider-header"><label>Logo Size</label><span id="logoSizeValue">8%</span></div>
         <input type="range" id="logoSize" min="3" max="20" value="8">
       </div>
       <div class="logo-controls">
         <button class="btn btn-secondary btn-small" onclick="resetLogoPositions()">Reset Positions</button>
       </div>
-
-      <h3 style="margin-top: 12px;">Manage Presets</h3>
+      <h3 style="margin-top:12px;">Manage Logo Presets</h3>
       <div class="logo-upload-area" id="logoUploadArea">
         <p>Upload logo to save as preset</p>
         <input type="file" id="logoFileInput" accept="image/*" style="display:none">
@@ -674,210 +471,241 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var wrapper = document.getElementById('canvasWrapper');
 
-// PL-style font
-var fontFace = new FontFace('PLFont', "url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8.woff2')", {
-  weight: 'normal',
-  style: 'normal'
-});
-fontFace.load().then(function(loaded) {
-  document.fonts.add(loaded);
-  render();
-});
+var fontFace = new FontFace('PLFont', "url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8.woff2')", { weight: 'normal', style: 'normal' });
+fontFace.load().then(function(loaded) { document.fonts.add(loaded); render(); });
 
-// ============ LOGO PRESET SYSTEM (localStorage) ============
+// ============ STORAGE KEYS ============
+var LOGOS_KEY = 'nameset_logos';
+var PROFILES_KEY = 'nameset_profiles';
 
-var STORAGE_KEY = 'nameset_logos';
-
-function getSavedLogos() {
-  try {
-    var data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveLogos(logos) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(logos));
-  } catch (e) {
-    alert('Storage full. Try removing some saved logos.');
-  }
-}
+// ============ LOGO PRESETS ============
+function getSavedLogos() { try { return JSON.parse(localStorage.getItem(LOGOS_KEY)) || []; } catch(e) { return []; } }
+function saveLogosStorage(logos) { try { localStorage.setItem(LOGOS_KEY, JSON.stringify(logos)); } catch(e) { alert('Storage full.'); } }
 
 function addLogoPreset(name, dataUrl) {
   var logos = getSavedLogos();
-  // Check if name already exists, replace it
   var existing = logos.findIndex(function(l) { return l.name === name; });
-  if (existing >= 0) {
-    logos[existing].data = dataUrl;
-  } else {
-    logos.push({ name: name, data: dataUrl });
-  }
-  saveLogos(logos);
+  if (existing >= 0) logos[existing].data = dataUrl;
+  else logos.push({ name: name, data: dataUrl });
+  saveLogosStorage(logos);
   refreshLogoUI();
 }
 
 function deleteLogoPreset(name) {
-  var logos = getSavedLogos();
-  logos = logos.filter(function(l) { return l.name !== name; });
-  saveLogos(logos);
-  if (state.selectedLogo === name) {
-    state.selectedLogo = 'none';
-    state.logoImage = null;
-    state.logoImageWhite = null;
-    document.getElementById('logoPresetSelect').value = 'none';
-  }
-  refreshLogoUI();
-  render();
+  var logos = getSavedLogos().filter(function(l) { return l.name !== name; });
+  saveLogosStorage(logos);
+  if (state.selectedLogo === name) { state.selectedLogo = 'none'; state.logoImage = null; state.logoImageWhite = null; document.getElementById('logoPresetSelect').value = 'none'; }
+  refreshLogoUI(); render();
 }
 
 function refreshLogoUI() {
   var logos = getSavedLogos();
   var select = document.getElementById('logoPresetSelect');
   var list = document.getElementById('savedLogosList');
-
-  // Refresh dropdown
   select.innerHTML = '<option value="none">None</option>';
-  logos.forEach(function(logo) {
-    var opt = document.createElement('option');
-    opt.value = logo.name;
-    opt.textContent = logo.name;
-    select.appendChild(opt);
-  });
-
-  // Restore selection
-  if (state.selectedLogo && state.selectedLogo !== 'none') {
-    select.value = state.selectedLogo;
-  }
-
-  // Refresh saved list
+  logos.forEach(function(logo) { var o = document.createElement('option'); o.value = logo.name; o.textContent = logo.name; select.appendChild(o); });
+  if (state.selectedLogo && state.selectedLogo !== 'none') select.value = state.selectedLogo;
   list.innerHTML = '';
   logos.forEach(function(logo) {
-    var item = document.createElement('div');
-    item.className = 'saved-logo-item';
+    var item = document.createElement('div'); item.className = 'saved-logo-item';
     item.innerHTML = '<span>' + logo.name + '</span><button onclick="deleteLogoPreset(\'' + logo.name.replace(/'/g, "\\'") + '\')">Delete</button>';
     list.appendChild(item);
   });
 }
 
 function loadLogoFromPreset(name) {
-  if (name === 'none') {
-    state.logoImage = null;
-    state.logoImageWhite = null;
-    state.selectedLogo = 'none';
-    render();
-    return;
-  }
-
+  if (name === 'none') { state.logoImage = null; state.logoImageWhite = null; state.selectedLogo = 'none'; render(); return; }
   var logos = getSavedLogos();
   var logo = logos.find(function(l) { return l.name === name; });
   if (!logo) return;
-
   var img = new Image();
-  img.onload = function() {
-    state.logoImage = img;
-    state.selectedLogo = name;
-    // Generate white version
-    generateWhiteVersion(img);
-    syncLogos();
-    render();
-  };
+  img.onload = function() { state.logoImage = img; state.selectedLogo = name; generateWhiteVersion(img); syncLogos(); render(); };
   img.src = logo.data;
 }
 
-// Generate white version of logo using canvas compositing
 function generateWhiteVersion(sourceImg) {
-  var tc = document.createElement('canvas');
-  tc.width = sourceImg.width;
-  tc.height = sourceImg.height;
+  var tc = document.createElement('canvas'); tc.width = sourceImg.width; tc.height = sourceImg.height;
   var tctx = tc.getContext('2d');
-
-  // Draw original
   tctx.drawImage(sourceImg, 0, 0);
-
-  // Make all opaque pixels white
   tctx.globalCompositeOperation = 'source-in';
   tctx.fillStyle = '#ffffff';
   tctx.fillRect(0, 0, tc.width, tc.height);
-
   var whiteImg = new Image();
-  whiteImg.onload = function() {
-    state.logoImageWhite = whiteImg;
-    render();
-  };
+  whiteImg.onload = function() { state.logoImageWhite = whiteImg; render(); };
   whiteImg.src = tc.toDataURL('image/png');
 }
 
-// Get the current logo image based on color selection
 function getCurrentLogoImage() {
-  if (state.logoColor === 'white' && state.logoImageWhite) {
-    return state.logoImageWhite;
-  }
+  if (state.logoColor === 'white' && state.logoImageWhite) return state.logoImageWhite;
   return state.logoImage;
 }
 
-// ============ STATE ============
+// ============ PROFILES ============
+function getSavedProfiles() { try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; } catch(e) { return []; } }
+function saveProfilesStorage(profiles) { try { localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); } catch(e) { alert('Storage full.'); } }
 
+function getStateSnapshot() {
+  return {
+    name: state.name, number: state.number,
+    fillColor: state.fillColor, outlineColor: state.outlineColor, bgColor: state.bgColor,
+    transparent: state.transparent, showOutline: state.showOutline,
+    width: state.width, height: state.height,
+    arc: state.arc, nameSize: state.nameSize, numberSize: state.numberSize,
+    nameSpacing: state.nameSpacing, numberSpacing: state.numberSpacing,
+    outlineThickness: state.outlineThickness, gridSize: state.gridSize,
+    showGrid: state.showGrid, snapToGrid: state.snapToGrid,
+    nameX: state.nameX, nameY: state.nameY,
+    numberX: state.numberX, numberY: state.numberY,
+    selectedLogo: state.selectedLogo, logoColor: state.logoColor, logoSize: state.logoSize,
+    logos: JSON.parse(JSON.stringify(state.logos))
+  };
+}
+
+function saveProfile() {
+  var nameInput = document.getElementById('profileNameInput');
+  var name = nameInput.value.trim();
+  if (!name) { alert('Enter a profile name.'); return; }
+  var profiles = getSavedProfiles();
+  var existing = profiles.findIndex(function(p) { return p.name === name; });
+  var snapshot = getStateSnapshot();
+  if (existing >= 0) { profiles[existing].data = snapshot; }
+  else { profiles.push({ name: name, data: snapshot }); }
+  saveProfilesStorage(profiles);
+  nameInput.value = '';
+  refreshProfileUI();
+}
+
+function loadProfile(name) {
+  var profiles = getSavedProfiles();
+  var profile = profiles.find(function(p) { return p.name === name; });
+  if (!profile) return;
+  var d = profile.data;
+
+  state.name = d.name || '';
+  state.number = d.number || '';
+  state.fillColor = d.fillColor || '#1a1a4e';
+  state.outlineColor = d.outlineColor || '#ffffff';
+  state.bgColor = d.bgColor || '#ffffff';
+  state.transparent = d.transparent !== undefined ? d.transparent : true;
+  state.showOutline = d.showOutline !== undefined ? d.showOutline : true;
+  state.width = d.width || 800;
+  state.height = d.height || 1000;
+  state.arc = d.arc !== undefined ? d.arc : 25;
+  state.nameSize = d.nameSize || 13;
+  state.numberSize = d.numberSize || 55;
+  state.nameSpacing = d.nameSpacing || 0;
+  state.numberSpacing = d.numberSpacing || 0;
+  state.outlineThickness = d.outlineThickness || 4;
+  state.gridSize = d.gridSize || 20;
+  state.showGrid = d.showGrid || false;
+  state.snapToGrid = d.snapToGrid !== undefined ? d.snapToGrid : true;
+  state.nameX = d.nameX || 50;
+  state.nameY = d.nameY || 20;
+  state.numberX = d.numberX || 50;
+  state.numberY = d.numberY || 58;
+  state.selectedLogo = d.selectedLogo || 'none';
+  state.logoColor = d.logoColor || 'black';
+  state.logoSize = d.logoSize || 8;
+  state.logos = d.logos || [];
+
+  // Sync canvas size
+  canvas.width = state.width;
+  canvas.height = state.height;
+
+  // Update all UI elements
+  document.getElementById('playerName').value = state.name;
+  document.getElementById('playerNumber').value = state.number;
+  document.getElementById('fillColor').value = state.fillColor;
+  document.getElementById('fillColorHex').value = state.fillColor;
+  document.getElementById('outlineColor').value = state.outlineColor;
+  document.getElementById('outlineColorHex').value = state.outlineColor;
+  document.getElementById('bgColor').value = state.bgColor;
+  document.getElementById('bgColorHex').value = state.bgColor;
+  document.getElementById('canvasWidth').value = state.width;
+  document.getElementById('canvasHeight').value = state.height;
+  document.getElementById('dimDisplay').textContent = state.width + ' \u00d7 ' + state.height + ' px';
+  document.getElementById('nameArc').value = state.arc;
+  document.getElementById('arcValue').textContent = state.arc + '\u00b0';
+  document.getElementById('nameSize').value = state.nameSize;
+  document.getElementById('nameSizeValue').textContent = state.nameSize + '%';
+  document.getElementById('numberSize').value = state.numberSize;
+  document.getElementById('numberSizeValue').textContent = state.numberSize + '%';
+  document.getElementById('nameSpacing').value = state.nameSpacing;
+  document.getElementById('nameSpacingValue').textContent = state.nameSpacing + 'px';
+  document.getElementById('numberSpacing').value = state.numberSpacing;
+  document.getElementById('numberSpacingValue').textContent = state.numberSpacing + 'px';
+  document.getElementById('outlineThickness').value = state.outlineThickness;
+  document.getElementById('outlineThicknessValue').textContent = state.outlineThickness + '%';
+  document.getElementById('gridSize').value = state.gridSize;
+  document.getElementById('gridSizeValue').textContent = state.gridSize + 'px';
+  document.getElementById('logoSize').value = state.logoSize;
+  document.getElementById('logoSizeValue').textContent = state.logoSize + '%';
+
+  // Toggles
+  document.getElementById('transparentToggle').classList.toggle('active', state.transparent);
+  wrapper.classList.toggle('transparent-bg', state.transparent);
+  document.getElementById('outlineToggle').classList.toggle('active', state.showOutline);
+  document.getElementById('gridToggle').classList.toggle('active', state.showGrid);
+  document.getElementById('snapToggle').classList.toggle('active', state.snapToGrid);
+
+  // Logo color toggle
+  var logoColorBtns = document.querySelectorAll('#logoColorToggle button');
+  logoColorBtns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-color') === state.logoColor); });
+
+  // Logo preset
+  document.getElementById('logoPresetSelect').value = state.selectedLogo;
+  loadLogoFromPreset(state.selectedLogo);
+
+  syncLogos();
+  render();
+}
+
+function deleteProfile(name) {
+  var profiles = getSavedProfiles().filter(function(p) { return p.name !== name; });
+  saveProfilesStorage(profiles);
+  refreshProfileUI();
+}
+
+function refreshProfileUI() {
+  var profiles = getSavedProfiles();
+  var select = document.getElementById('profileSelect');
+  var list = document.getElementById('savedProfilesList');
+
+  select.innerHTML = '<option value="">-- Select --</option>';
+  profiles.forEach(function(p) { var o = document.createElement('option'); o.value = p.name; o.textContent = p.name; select.appendChild(o); });
+
+  list.innerHTML = '';
+  profiles.forEach(function(p) {
+    var item = document.createElement('div'); item.className = 'saved-profile-item';
+    item.innerHTML = '<span>' + p.name + '</span><div class="profile-actions"><button class="profile-load" onclick="loadProfile(\'' + p.name.replace(/'/g, "\\'") + '\')">Load</button><button onclick="deleteProfile(\'' + p.name.replace(/'/g, "\\'") + '\')">Delete</button></div>';
+    list.appendChild(item);
+  });
+}
+
+// ============ STATE ============
 var state = {
-  name: 'LAMMENS',
-  number: '11',
-  fillColor: '#1a1a4e',
-  outlineColor: '#ffffff',
-  bgColor: '#ffffff',
-  transparent: true,
-  showOutline: true,
-  width: 800,
-  height: 1000,
-  arc: 25,
-  nameSize: 13,
-  numberSize: 55,
-  nameSpacing: 0,
-  numberSpacing: 0,
-  outlineThickness: 4,
-  gridSize: 20,
-  showGrid: false,
-  snapToGrid: true,
-  nameX: 50,
-  nameY: 20,
-  numberX: 50,
-  numberY: 58,
-  logoImage: null,
-  logoImageWhite: null,
-  logoColor: 'black',
-  selectedLogo: 'none',
-  logoSize: 8,
-  logos: [
-    { x: 40, y: 82 },
-    { x: 60, y: 82 }
-  ]
+  name: 'LAMMENS', number: '11',
+  fillColor: '#1a1a4e', outlineColor: '#ffffff', bgColor: '#ffffff',
+  transparent: true, showOutline: true,
+  width: 800, height: 1000,
+  arc: 25, nameSize: 13, numberSize: 55,
+  nameSpacing: 0, numberSpacing: 0, outlineThickness: 4,
+  gridSize: 20, showGrid: false, snapToGrid: true,
+  nameX: 50, nameY: 20, numberX: 50, numberY: 58,
+  logoImage: null, logoImageWhite: null, logoColor: 'black',
+  selectedLogo: 'none', logoSize: 8,
+  logos: [{ x: 40, y: 82 }, { x: 60, y: 82 }]
 };
 
-// Snap guides state
 var snapGuides = { centerX: false, centerY: false };
-
-// Drag state
 var drag = { active: false, target: null, offsetX: 0, offsetY: 0 };
 
-function isIOS() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
+function canWebShare() { return navigator.share && navigator.canShare; }
 
-function canWebShare() {
-  return navigator.share && navigator.canShare;
-}
-
-// Sync logo count with number of digits
 function syncLogos() {
   var digitCount = state.number.length;
-  while (state.logos.length < digitCount) {
-    var idx = state.logos.length;
-    state.logos.push({ x: 30 + idx * 20, y: 82 });
-  }
-  while (state.logos.length > digitCount) {
-    state.logos.pop();
-  }
+  while (state.logos.length < digitCount) { state.logos.push({ x: 30 + state.logos.length * 20, y: 82 }); }
+  while (state.logos.length > digitCount) { state.logos.pop(); }
 }
 
 function resetLogoPositions() {
@@ -885,25 +713,15 @@ function resetLogoPositions() {
   var numX = state.numberX;
   var spacing = digitCount > 1 ? 60 / digitCount : 0;
   var startX = numX - (spacing * (digitCount - 1)) / 2;
-
-  for (var i = 0; i < digitCount; i++) {
-    state.logos[i] = { x: startX + i * spacing, y: 82 };
-  }
+  for (var i = 0; i < digitCount; i++) { state.logos[i] = { x: startX + i * spacing, y: 82 }; }
   render();
 }
 
 // ============ INPUT BINDINGS ============
-
 function bindInput(id, key, transform) {
   transform = transform || function(v) { return v; };
   var el = document.getElementById(id);
-  el.addEventListener('input', function() {
-    state[key] = transform(el.value);
-    if (key === 'number') {
-      syncLogos();
-    }
-    render();
-  });
+  el.addEventListener('input', function() { state[key] = transform(el.value); if (key === 'number') syncLogos(); render(); });
 }
 
 bindInput('playerName', 'name', function(v) { return v.toUpperCase(); });
@@ -917,387 +735,176 @@ bindInput('outlineThickness', 'outlineThickness', Number);
 bindInput('gridSize', 'gridSize', Number);
 bindInput('logoSize', 'logoSize', Number);
 
-// Color sync
 function syncColor(pickerId, hexId, stateKey) {
-  var picker = document.getElementById(pickerId);
-  var hex = document.getElementById(hexId);
-  picker.addEventListener('input', function() {
-    state[stateKey] = picker.value;
-    hex.value = picker.value;
-    render();
-  });
-  hex.addEventListener('input', function() {
-    if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) {
-      state[stateKey] = hex.value;
-      picker.value = hex.value;
-      render();
-    }
-  });
+  var picker = document.getElementById(pickerId), hex = document.getElementById(hexId);
+  picker.addEventListener('input', function() { state[stateKey] = picker.value; hex.value = picker.value; render(); });
+  hex.addEventListener('input', function() { if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) { state[stateKey] = hex.value; picker.value = hex.value; render(); } });
 }
-
 syncColor('fillColor', 'fillColorHex', 'fillColor');
 syncColor('outlineColor', 'outlineColorHex', 'outlineColor');
 syncColor('bgColor', 'bgColorHex', 'bgColor');
 
-// Toggles
 function setupToggle(id, stateKey, extraFn) {
   var el = document.getElementById(id);
-  el.addEventListener('click', function() {
-    state[stateKey] = !state[stateKey];
-    el.classList.toggle('active', state[stateKey]);
-    if (extraFn) extraFn();
-    render();
-  });
+  el.addEventListener('click', function() { state[stateKey] = !state[stateKey]; el.classList.toggle('active', state[stateKey]); if (extraFn) extraFn(); render(); });
 }
-
-setupToggle('transparentToggle', 'transparent', function() {
-  wrapper.classList.toggle('transparent-bg', state.transparent);
-});
+setupToggle('transparentToggle', 'transparent', function() { wrapper.classList.toggle('transparent-bg', state.transparent); });
 setupToggle('outlineToggle', 'showOutline');
 setupToggle('gridToggle', 'showGrid');
 setupToggle('snapToggle', 'snapToGrid');
 
 // Logo color toggle
-var logoColorBtns = document.querySelectorAll('#logoColorToggle button');
-logoColorBtns.forEach(function(btn) {
+document.querySelectorAll('#logoColorToggle button').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    logoColorBtns.forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    state.logoColor = btn.getAttribute('data-color');
-    render();
+    document.querySelectorAll('#logoColorToggle button').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active'); state.logoColor = btn.getAttribute('data-color'); render();
   });
 });
 
 // Logo preset select
-document.getElementById('logoPresetSelect').addEventListener('change', function() {
-  loadLogoFromPreset(this.value);
-});
+document.getElementById('logoPresetSelect').addEventListener('change', function() { loadLogoFromPreset(this.value); });
+
+// Profile select
+document.getElementById('profileSelect').addEventListener('change', function() { if (this.value) loadProfile(this.value); });
 
 // Dimensions
-var widthInput = document.getElementById('canvasWidth');
-var heightInput = document.getElementById('canvasHeight');
-var dimDisplay = document.getElementById('dimDisplay');
-
-widthInput.addEventListener('change', function() {
-  state.width = Math.max(200, Math.min(4000, Number(widthInput.value)));
-  widthInput.value = state.width;
-  canvas.width = state.width;
-  dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px';
-  render();
-});
-
-heightInput.addEventListener('change', function() {
-  state.height = Math.max(200, Math.min(4000, Number(heightInput.value)));
-  heightInput.value = state.height;
-  canvas.height = state.height;
-  dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px';
-  render();
-});
+var widthInput = document.getElementById('canvasWidth'), heightInput = document.getElementById('canvasHeight'), dimDisplay = document.getElementById('dimDisplay');
+widthInput.addEventListener('change', function() { state.width = Math.max(200, Math.min(4000, Number(widthInput.value))); widthInput.value = state.width; canvas.width = state.width; dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px'; render(); });
+heightInput.addEventListener('change', function() { state.height = Math.max(200, Math.min(4000, Number(heightInput.value))); heightInput.value = state.height; canvas.height = state.height; dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px'; render(); });
 
 // Slider displays
-document.getElementById('nameArc').addEventListener('input', function() {
-  document.getElementById('arcValue').textContent = this.value + '\u00b0';
-});
-document.getElementById('nameSize').addEventListener('input', function() {
-  document.getElementById('nameSizeValue').textContent = this.value + '%';
-});
-document.getElementById('numberSize').addEventListener('input', function() {
-  document.getElementById('numberSizeValue').textContent = this.value + '%';
-});
-document.getElementById('nameSpacing').addEventListener('input', function() {
-  document.getElementById('nameSpacingValue').textContent = this.value + 'px';
-});
-document.getElementById('numberSpacing').addEventListener('input', function() {
-  document.getElementById('numberSpacingValue').textContent = this.value + 'px';
-});
-document.getElementById('outlineThickness').addEventListener('input', function() {
-  document.getElementById('outlineThicknessValue').textContent = this.value + '%';
-});
-document.getElementById('gridSize').addEventListener('input', function() {
-  document.getElementById('gridSizeValue').textContent = this.value + 'px';
-});
-document.getElementById('logoSize').addEventListener('input', function() {
-  document.getElementById('logoSizeValue').textContent = this.value + '%';
-});
+document.getElementById('nameArc').addEventListener('input', function() { document.getElementById('arcValue').textContent = this.value + '\u00b0'; });
+document.getElementById('nameSize').addEventListener('input', function() { document.getElementById('nameSizeValue').textContent = this.value + '%'; });
+document.getElementById('numberSize').addEventListener('input', function() { document.getElementById('numberSizeValue').textContent = this.value + '%'; });
+document.getElementById('nameSpacing').addEventListener('input', function() { document.getElementById('nameSpacingValue').textContent = this.value + 'px'; });
+document.getElementById('numberSpacing').addEventListener('input', function() { document.getElementById('numberSpacingValue').textContent = this.value + 'px'; });
+document.getElementById('outlineThickness').addEventListener('input', function() { document.getElementById('outlineThicknessValue').textContent = this.value + '%'; });
+document.getElementById('gridSize').addEventListener('input', function() { document.getElementById('gridSizeValue').textContent = this.value + 'px'; });
+document.getElementById('logoSize').addEventListener('input', function() { document.getElementById('logoSizeValue').textContent = this.value + '%'; });
 
 // ============ LOGO UPLOAD ============
-
-var logoUploadArea = document.getElementById('logoUploadArea');
-var logoFileInput = document.getElementById('logoFileInput');
-
-logoUploadArea.addEventListener('click', function() {
-  logoFileInput.click();
-});
-
-logoUploadArea.addEventListener('dragover', function(e) {
-  e.preventDefault();
-  logoUploadArea.style.borderColor = 'var(--accent)';
-});
-
-logoUploadArea.addEventListener('dragleave', function() {
-  logoUploadArea.style.borderColor = '';
-});
-
-logoUploadArea.addEventListener('drop', function(e) {
-  e.preventDefault();
-  logoUploadArea.style.borderColor = '';
-  var file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    promptAndSaveLogo(file);
-  }
-});
-
-logoFileInput.addEventListener('change', function() {
-  if (this.files[0]) {
-    promptAndSaveLogo(this.files[0]);
-    this.value = '';
-  }
-});
+var logoUploadArea = document.getElementById('logoUploadArea'), logoFileInput = document.getElementById('logoFileInput');
+logoUploadArea.addEventListener('click', function() { logoFileInput.click(); });
+logoUploadArea.addEventListener('dragover', function(e) { e.preventDefault(); logoUploadArea.style.borderColor = 'var(--accent)'; });
+logoUploadArea.addEventListener('dragleave', function() { logoUploadArea.style.borderColor = ''; });
+logoUploadArea.addEventListener('drop', function(e) { e.preventDefault(); logoUploadArea.style.borderColor = ''; var f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) promptAndSaveLogo(f); });
+logoFileInput.addEventListener('change', function() { if (this.files[0]) { promptAndSaveLogo(this.files[0]); this.value = ''; } });
 
 function promptAndSaveLogo(file) {
   var name = prompt('Name this logo preset (e.g. "Classic PL 1992-2007"):');
   if (!name || !name.trim()) return;
   name = name.trim();
-
   var reader = new FileReader();
-  reader.onload = function(e) {
-    addLogoPreset(name, e.target.result);
-    // Auto-select the newly added logo
-    state.selectedLogo = name;
-    document.getElementById('logoPresetSelect').value = name;
-    loadLogoFromPreset(name);
-  };
+  reader.onload = function(e) { addLogoPreset(name, e.target.result); state.selectedLogo = name; document.getElementById('logoPresetSelect').value = name; loadLogoFromPreset(name); };
   reader.readAsDataURL(file);
 }
 
 // ============ CENTRE ALL ============
-
 function centerAll() {
-  state.nameX = 50;
-  state.numberX = 50;
-  var digitCount = state.logos.length;
-  if (digitCount > 0) {
-    var spacing = digitCount > 1 ? 60 / digitCount : 0;
-    var startX = 50 - (spacing * (digitCount - 1)) / 2;
-    for (var i = 0; i < digitCount; i++) {
-      state.logos[i].x = startX + i * spacing;
-    }
-  }
+  state.nameX = 50; state.numberX = 50;
+  var dc = state.logos.length;
+  if (dc > 0) { var sp = dc > 1 ? 60 / dc : 0; var sx = 50 - (sp * (dc - 1)) / 2; for (var i = 0; i < dc; i++) state.logos[i].x = sx + i * sp; }
   render();
 }
 
-// ============ SNAP ============
-
-function snapValue(value, gridSize) {
-  if (!state.snapToGrid) return value;
-  return Math.round(value / gridSize) * gridSize;
-}
-
 // ============ INTERACTION ============
+function snapValue(v, g) { return state.snapToGrid ? Math.round(v / g) * g : v; }
 
 function getCanvasPos(e) {
   var rect = canvas.getBoundingClientRect();
-  var scaleX = state.width / rect.width;
-  var scaleY = state.height / rect.height;
-  var clientX, clientY;
-  if (e.touches) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  } else {
-    clientX = e.clientX;
-    clientY = e.clientY;
-  }
-  return {
-    x: (clientX - rect.left) * scaleX,
-    y: (clientY - rect.top) * scaleY
-  };
+  var cx = e.touches ? e.touches[0].clientX : e.clientX;
+  var cy = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x: (cx - rect.left) * (state.width / rect.width), y: (cy - rect.top) * (state.height / rect.height) };
 }
 
 function hitTest(px, py) {
-  var w = state.width;
-  var h = state.height;
+  var w = state.width, h = state.height;
   var logoImg = getCurrentLogoImage();
-
-  // Check logos first
   if (logoImg) {
-    var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (logoImg.width / logoImg.height);
+    var lH = (state.logoSize / 100) * h, lW = lH * (logoImg.width / logoImg.height);
     for (var i = state.logos.length - 1; i >= 0; i--) {
-      var lx = (state.logos[i].x / 100) * w;
-      var ly = (state.logos[i].y / 100) * h;
-      if (px > lx - logoW/2 - 15 && px < lx + logoW/2 + 15 &&
-          py > ly - logoH/2 - 15 && py < ly + logoH/2 + 15) {
-        return 'logo-' + i;
-      }
+      var lx = (state.logos[i].x / 100) * w, ly = (state.logos[i].y / 100) * h;
+      if (px > lx - lW/2 - 15 && px < lx + lW/2 + 15 && py > ly - lH/2 - 15 && py < ly + lH/2 + 15) return 'logo-' + i;
     }
   }
-
-  // Number
-  var numX = (state.numberX / 100) * w;
-  var numY = (state.numberY / 100) * h;
-  var numFontSize = (state.numberSize / 100) * h;
-  if (px > numX - numFontSize * 0.8 && px < numX + numFontSize * 0.8 &&
-      py > numY - numFontSize * 0.6 && py < numY + numFontSize * 0.6) {
-    return 'number';
-  }
-
-  // Name
-  var nameX = (state.nameX / 100) * w;
-  var nameY = (state.nameY / 100) * h;
-  var nameFontSize = (state.nameSize / 100) * w;
-  var nameHalfW = Math.max(state.name.length * nameFontSize * 0.5, nameFontSize * 2);
-  if (px > nameX - nameHalfW && px < nameX + nameHalfW &&
-      py > nameY - nameFontSize * 1.2 && py < nameY + nameFontSize * 1.2) {
-    return 'name';
-  }
-
+  var nX = (state.numberX / 100) * w, nY = (state.numberY / 100) * h, nF = (state.numberSize / 100) * h;
+  if (px > nX - nF * 0.8 && px < nX + nF * 0.8 && py > nY - nF * 0.6 && py < nY + nF * 0.6) return 'number';
+  var nmX = (state.nameX / 100) * w, nmY = (state.nameY / 100) * h, nmF = (state.nameSize / 100) * w;
+  var nmHW = Math.max(state.name.length * nmF * 0.5, nmF * 2);
+  if (px > nmX - nmHW && px < nmX + nmHW && py > nmY - nmF * 1.2 && py < nmY + nmF * 1.2) return 'name';
   return null;
 }
 
-canvas.addEventListener('mousedown', startDrag);
-canvas.addEventListener('touchstart', startDrag);
-document.addEventListener('mousemove', moveDrag);
-document.addEventListener('touchmove', moveDrag, { passive: false });
-document.addEventListener('mouseup', endDrag);
-document.addEventListener('touchend', endDrag);
+canvas.addEventListener('mousedown', startDrag); canvas.addEventListener('touchstart', startDrag);
+document.addEventListener('mousemove', moveDrag); document.addEventListener('touchmove', moveDrag, { passive: false });
+document.addEventListener('mouseup', endDrag); document.addEventListener('touchend', endDrag);
 
 function startDrag(e) {
-  e.preventDefault();
-  var pos = getCanvasPos(e);
-  var target = hitTest(pos.x, pos.y);
+  e.preventDefault(); var pos = getCanvasPos(e); var target = hitTest(pos.x, pos.y);
   if (target) {
-    drag.active = true;
-    drag.target = target;
-    if (target.startsWith('logo-')) {
-      var idx = parseInt(target.split('-')[1]);
-      drag.offsetX = pos.x - (state.logos[idx].x / 100) * state.width;
-      drag.offsetY = pos.y - (state.logos[idx].y / 100) * state.height;
-    } else {
-      drag.offsetX = pos.x - (state[target + 'X'] / 100) * state.width;
-      drag.offsetY = pos.y - (state[target + 'Y'] / 100) * state.height;
-    }
+    drag.active = true; drag.target = target;
+    if (target.startsWith('logo-')) { var idx = parseInt(target.split('-')[1]); drag.offsetX = pos.x - (state.logos[idx].x / 100) * state.width; drag.offsetY = pos.y - (state.logos[idx].y / 100) * state.height; }
+    else { drag.offsetX = pos.x - (state[target + 'X'] / 100) * state.width; drag.offsetY = pos.y - (state[target + 'Y'] / 100) * state.height; }
   }
 }
 
 function moveDrag(e) {
-  if (!drag.active) return;
-  e.preventDefault();
+  if (!drag.active) return; e.preventDefault();
   var pos = getCanvasPos(e);
-  var rawX = pos.x - drag.offsetX;
-  var rawY = pos.y - drag.offsetY;
-
-  var grid = state.gridSize;
-  var finalX = state.snapToGrid ? snapValue(rawX, grid) : rawX;
-  var finalY = state.snapToGrid ? snapValue(rawY, grid) : rawY;
-
-  var centerX = state.width / 2;
-  var centerY = state.height / 2;
-  var snapThreshold = grid * 0.75;
-
-  snapGuides.centerX = Math.abs(finalX - centerX) < snapThreshold;
-  snapGuides.centerY = Math.abs(finalY - centerY) < snapThreshold;
-
-  if (snapGuides.centerX && state.snapToGrid) finalX = centerX;
-  if (snapGuides.centerY && state.snapToGrid) finalY = centerY;
-
-  if (drag.target.startsWith('logo-')) {
-    var idx = parseInt(drag.target.split('-')[1]);
-    state.logos[idx].x = (finalX / state.width) * 100;
-    state.logos[idx].y = (finalY / state.height) * 100;
-  } else {
-    state[drag.target + 'X'] = (finalX / state.width) * 100;
-    state[drag.target + 'Y'] = (finalY / state.height) * 100;
-  }
+  var rX = pos.x - drag.offsetX, rY = pos.y - drag.offsetY;
+  var g = state.gridSize;
+  var fX = snapValue(rX, g), fY = snapValue(rY, g);
+  var cX = state.width / 2, cY = state.height / 2, th = g * 0.75;
+  snapGuides.centerX = Math.abs(fX - cX) < th; snapGuides.centerY = Math.abs(fY - cY) < th;
+  if (snapGuides.centerX && state.snapToGrid) fX = cX;
+  if (snapGuides.centerY && state.snapToGrid) fY = cY;
+  if (drag.target.startsWith('logo-')) { var idx = parseInt(drag.target.split('-')[1]); state.logos[idx].x = (fX / state.width) * 100; state.logos[idx].y = (fY / state.height) * 100; }
+  else { state[drag.target + 'X'] = (fX / state.width) * 100; state[drag.target + 'Y'] = (fY / state.height) * 100; }
   render();
 }
 
-function endDrag() {
-  drag.active = false;
-  drag.target = null;
-  snapGuides.centerX = false;
-  snapGuides.centerY = false;
-  render();
-}
+function endDrag() { drag.active = false; drag.target = null; snapGuides.centerX = false; snapGuides.centerY = false; render(); }
 
 // ============ DRAWING ============
-
-function drawTextWithSpacing(text, x, y, spacing, align) {
+function drawTextWithSpacing(text, x, y, spacing) {
   if (!text) return;
-  if (spacing === 0) {
-    ctx.textAlign = align || 'center';
-    ctx.textBaseline = 'middle';
-    if (state.showOutline) ctx.strokeText(text, x, y);
-    ctx.fillText(text, x, y);
-    return;
-  }
-  var chars = text.split('');
-  var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
-  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
-  var startX = x - totalWidth / 2;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  chars.forEach(function(char, i) {
-    if (state.showOutline) ctx.strokeText(char, startX, y);
-    ctx.fillText(char, startX, y);
-    startX += charWidths[i] + spacing;
-  });
+  if (spacing === 0) { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; if (state.showOutline) ctx.strokeText(text, x, y); ctx.fillText(text, x, y); return; }
+  var chars = text.split(''), cw = chars.map(function(c) { return ctx.measureText(c).width; });
+  var tw = cw.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
+  var sx = x - tw / 2; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  chars.forEach(function(ch, i) { if (state.showOutline) ctx.strokeText(ch, sx, y); ctx.fillText(ch, sx, y); sx += cw[i] + spacing; });
 }
 
-function drawArcText(text, centerX, centerY, radius, arcAngle, spacing) {
+function drawArcText(text, cx, cy, r, arcAngle, spacing) {
   if (!text) return;
-  if (arcAngle === 0) {
-    drawTextWithSpacing(text, centerX, centerY, spacing, 'center');
-    return;
-  }
-  var totalAngle = (arcAngle * Math.PI) / 180;
-  var chars = text.split('');
-  var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
-  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
-  var anglePerPixel = totalAngle / totalWidth;
-  var currentAngle = -Math.PI / 2 - totalAngle / 2;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  chars.forEach(function(char, i) {
-    var halfCharAngle = (charWidths[i] / 2) * anglePerPixel;
-    currentAngle += halfCharAngle;
-    var charX = centerX + radius * Math.cos(currentAngle);
-    var charY = centerY + radius * Math.sin(currentAngle);
-    ctx.save();
-    ctx.translate(charX, charY);
-    ctx.rotate(currentAngle + Math.PI / 2);
-    if (state.showOutline) ctx.strokeText(char, 0, 0);
-    ctx.fillText(char, 0, 0);
-    ctx.restore();
-    currentAngle += halfCharAngle + spacing * anglePerPixel;
+  if (arcAngle === 0) { drawTextWithSpacing(text, cx, cy, spacing); return; }
+  var ta = (arcAngle * Math.PI) / 180, chars = text.split('');
+  var cw = chars.map(function(c) { return ctx.measureText(c).width; });
+  var tw = cw.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
+  var app = ta / tw, ca = -Math.PI / 2 - ta / 2;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  chars.forEach(function(ch, i) {
+    var hca = (cw[i] / 2) * app; ca += hca;
+    var chX = cx + r * Math.cos(ca), chY = cy + r * Math.sin(ca);
+    ctx.save(); ctx.translate(chX, chY); ctx.rotate(ca + Math.PI / 2);
+    if (state.showOutline) ctx.strokeText(ch, 0, 0); ctx.fillText(ch, 0, 0);
+    ctx.restore(); ca += hca + spacing * app;
   });
 }
 
 function drawGrid() {
-  var w = state.width;
-  var h = state.height;
-  var grid = state.gridSize;
+  var w = state.width, h = state.height, g = state.gridSize;
   if (state.showGrid) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(100, 150, 255, 0.12)';
-    ctx.lineWidth = 1;
-    for (var x = grid; x < w; x += grid) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-    }
-    for (var y = grid; y < h; y += grid) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-    }
-    ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([6, 4]);
+    ctx.save(); ctx.strokeStyle = 'rgba(100,150,255,0.12)'; ctx.lineWidth = 1;
+    for (var x = g; x < w; x += g) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (var y = g; y < h; y += g) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(100,150,255,0.3)'; ctx.lineWidth = 1; ctx.setLineDash([6, 4]);
     ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
     ctx.restore();
   }
   if (drag.active) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(76, 175, 124, 0.8)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([]);
+    ctx.save(); ctx.strokeStyle = 'rgba(76,175,124,0.8)'; ctx.lineWidth = 2; ctx.setLineDash([]);
     if (snapGuides.centerX) { ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke(); }
     if (snapGuides.centerY) { ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke(); }
     ctx.restore();
@@ -1305,191 +912,78 @@ function drawGrid() {
 }
 
 function render() {
-  var w = state.width;
-  var h = state.height;
+  var w = state.width, h = state.height;
   ctx.clearRect(0, 0, w, h);
-  if (!state.transparent) {
-    ctx.fillStyle = state.bgColor;
-    ctx.fillRect(0, 0, w, h);
-  }
+  if (!state.transparent) { ctx.fillStyle = state.bgColor; ctx.fillRect(0, 0, w, h); }
   drawGrid();
-
-  var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
-  ctx.fillStyle = state.fillColor;
-  ctx.strokeStyle = state.outlineColor;
-  ctx.lineWidth = outlineWidth;
-  ctx.lineJoin = 'round';
-  ctx.miterLimit = 2;
-
+  var ow = (state.outlineThickness / 100) * Math.min(w, h);
+  ctx.fillStyle = state.fillColor; ctx.strokeStyle = state.outlineColor; ctx.lineWidth = ow; ctx.lineJoin = 'round'; ctx.miterLimit = 2;
   // Name
-  var nameFontSize = (state.nameSize / 100) * w;
-  ctx.font = nameFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
-  var nameX = (state.nameX / 100) * w;
-  var nameY = (state.nameY / 100) * h;
-  if (state.arc > 0) {
-    var textWidth = ctx.measureText(state.name).width + state.nameSpacing * (state.name.length - 1);
-    var arcRad = (state.arc * Math.PI) / 180;
-    var radius = textWidth / arcRad * 1.2;
-    drawArcText(state.name, nameX, nameY + radius, radius, state.arc, state.nameSpacing);
-  } else {
-    drawTextWithSpacing(state.name, nameX, nameY, state.nameSpacing, 'center');
-  }
-
+  var nfs = (state.nameSize / 100) * w;
+  ctx.font = nfs + 'px "PLFont","Anton","Impact","Arial Black",sans-serif';
+  var nmX = (state.nameX / 100) * w, nmY = (state.nameY / 100) * h;
+  if (state.arc > 0) { var tw = ctx.measureText(state.name).width + state.nameSpacing * (state.name.length - 1); var ar = (state.arc * Math.PI) / 180; var r = tw / ar * 1.2; drawArcText(state.name, nmX, nmY + r, r, state.arc, state.nameSpacing); }
+  else drawTextWithSpacing(state.name, nmX, nmY, state.nameSpacing);
   // Number
-  var numFontSize = (state.numberSize / 100) * h;
-  ctx.font = numFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
-  ctx.lineWidth = outlineWidth * 1.2;
-  var numX = (state.numberX / 100) * w;
-  var numY = (state.numberY / 100) * h;
-  drawTextWithSpacing(state.number, numX, numY, state.numberSpacing, 'center');
-
+  var nufs = (state.numberSize / 100) * h;
+  ctx.font = nufs + 'px "PLFont","Anton","Impact","Arial Black",sans-serif'; ctx.lineWidth = ow * 1.2;
+  drawTextWithSpacing(state.number, (state.numberX / 100) * w, (state.numberY / 100) * h, state.numberSpacing);
   // Logos
   var logoImg = getCurrentLogoImage();
   if (logoImg) {
-    var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (logoImg.width / logoImg.height);
-    for (var i = 0; i < state.logos.length; i++) {
-      var lx = (state.logos[i].x / 100) * w - logoW / 2;
-      var ly = (state.logos[i].y / 100) * h - logoH / 2;
-      ctx.drawImage(logoImg, lx, ly, logoW, logoH);
-    }
+    var lH = (state.logoSize / 100) * h, lW = lH * (logoImg.width / logoImg.height);
+    for (var i = 0; i < state.logos.length; i++) { ctx.drawImage(logoImg, (state.logos[i].x / 100) * w - lW/2, (state.logos[i].y / 100) * h - lH/2, lW, lH); }
   }
 }
 
 // ============ EXPORT ============
-
 function exportImage(format) {
-  var gridWasVisible = state.showGrid;
-  state.showGrid = false;
-  snapGuides.centerX = false;
-  snapGuides.centerY = false;
-  render();
-
-  var name = state.name || 'nameset';
-  var num = state.number || '';
-  var filename = (name + '_' + num).replace(/\s+/g, '_');
-
-  if (format === 'svg') {
-    var svg = generateSVG();
-    var blob = new Blob([svg], { type: 'image/svg+xml' });
-    if (canWebShare()) { shareFile(new File([blob], filename + '.svg', { type: 'image/svg+xml' })); }
-    else { downloadBlob(blob, filename + '.svg'); }
-  } else {
-    var mimeType = 'image/png';
-    var ext = 'png';
-    if (format === 'jpeg') { mimeType = 'image/jpeg'; ext = 'jpg'; }
-    if (format === 'webp') { mimeType = 'image/webp'; ext = 'webp'; }
-
-    var exportCanvas = canvas;
-    if (format === 'jpeg' && state.transparent) {
-      exportCanvas = document.createElement('canvas');
-      exportCanvas.width = state.width;
-      exportCanvas.height = state.height;
-      var tempCtx = exportCanvas.getContext('2d');
-      tempCtx.fillStyle = '#ffffff';
-      tempCtx.fillRect(0, 0, state.width, state.height);
-      tempCtx.drawImage(canvas, 0, 0);
-    }
-
-    exportCanvas.toBlob(function(blob) {
-      if (!blob) { fallbackExport(exportCanvas, filename + '.' + ext); state.showGrid = gridWasVisible; render(); return; }
-      if (canWebShare()) { shareFile(new File([blob], filename + '.' + ext, { type: mimeType })); }
-      else { downloadBlob(blob, filename + '.' + ext); }
-    }, mimeType, 0.95);
+  var gv = state.showGrid; state.showGrid = false; snapGuides.centerX = false; snapGuides.centerY = false; render();
+  var nm = state.name || 'nameset', nu = state.number || '', fn = (nm + '_' + nu).replace(/\s+/g, '_');
+  if (format === 'svg') { var svg = generateSVG(); var blob = new Blob([svg], { type: 'image/svg+xml' }); if (canWebShare()) shareFile(new File([blob], fn + '.svg', { type: 'image/svg+xml' })); else downloadBlob(blob, fn + '.svg'); }
+  else {
+    var mt = 'image/png', ext = 'png';
+    if (format === 'jpeg') { mt = 'image/jpeg'; ext = 'jpg'; } if (format === 'webp') { mt = 'image/webp'; ext = 'webp'; }
+    var ec = canvas;
+    if (format === 'jpeg' && state.transparent) { ec = document.createElement('canvas'); ec.width = state.width; ec.height = state.height; var tc = ec.getContext('2d'); tc.fillStyle = '#fff'; tc.fillRect(0, 0, state.width, state.height); tc.drawImage(canvas, 0, 0); }
+    ec.toBlob(function(blob) { if (!blob) { fallbackExport(ec, fn); state.showGrid = gv; render(); return; } if (canWebShare()) shareFile(new File([blob], fn + '.' + ext, { type: mt })); else downloadBlob(blob, fn + '.' + ext); }, mt, 0.95);
   }
-
-  state.showGrid = gridWasVisible;
-  render();
+  state.showGrid = gv; render();
 }
 
-function shareFile(file) {
-  var shareData = { files: [file] };
-  if (navigator.canShare(shareData)) {
-    navigator.share(shareData).catch(function(err) {
-      if (err.name !== 'AbortError') downloadBlob(file, file.name);
-    });
-  } else { downloadBlob(file, file.name); }
-}
-
-function downloadBlob(blob, filename) {
-  var url = URL.createObjectURL(blob);
-  var link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-}
-
-function fallbackExport(sourceCanvas, filename) {
-  sourceCanvas.toBlob(function(blob) {
-    if (canWebShare()) { shareFile(new File([blob], filename.replace(/\.\w+$/, '.png'), { type: 'image/png' })); }
-    else { downloadBlob(blob, filename.replace(/\.\w+$/, '.png')); }
-  }, 'image/png');
-}
+function shareFile(file) { var sd = { files: [file] }; if (navigator.canShare(sd)) navigator.share(sd).catch(function(e) { if (e.name !== 'AbortError') downloadBlob(file, file.name); }); else downloadBlob(file, file.name); }
+function downloadBlob(blob, fn) { var u = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = u; a.download = fn; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function() { URL.revokeObjectURL(u); }, 1000); }
+function fallbackExport(sc, fn) { sc.toBlob(function(b) { if (canWebShare()) shareFile(new File([b], fn + '.png', { type: 'image/png' })); else downloadBlob(b, fn + '.png'); }, 'image/png'); }
 
 function generateSVG() {
-  var w = state.width;
-  var h = state.height;
-  var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
-  var bgRect = '';
-  if (!state.transparent) bgRect = '<rect width="' + w + '" height="' + h + '" fill="' + state.bgColor + '"/>';
-
-  var nameFontSize = (state.nameSize / 100) * w;
-  var numFontSize = (state.numberSize / 100) * h;
-  var nameX = (state.nameX / 100) * w;
-  var nameY = (state.nameY / 100) * h;
-  var numX = (state.numberX / 100) * w;
-  var numY = (state.numberY / 100) * h;
-
-  var strokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + outlineWidth + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
-  var numStrokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (outlineWidth * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
-  var nameLS = state.nameSpacing !== 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
-  var numLS = state.numberSpacing !== 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
-
-  var nameElement = '';
+  var w = state.width, h = state.height, ow = (state.outlineThickness / 100) * Math.min(w, h);
+  var bg = state.transparent ? '' : '<rect width="' + w + '" height="' + h + '" fill="' + state.bgColor + '"/>';
+  var nfs = (state.nameSize / 100) * w, nufs = (state.numberSize / 100) * h;
+  var nmX = (state.nameX / 100) * w, nmY = (state.nameY / 100) * h;
+  var nuX = (state.numberX / 100) * w, nuY = (state.numberY / 100) * h;
+  var sa = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + ow + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
+  var nsa = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (ow * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
+  var nls = state.nameSpacing !== 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
+  var nuls = state.numberSpacing !== 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
+  var ne = '';
   if (state.arc > 0 && state.name) {
-    var tw = nameFontSize * state.name.length * 0.6 + state.nameSpacing * (state.name.length - 1);
-    var ar = (state.arc * Math.PI) / 180;
-    var r = tw / ar * 1.2;
-    var sa = -Math.PI / 2 - ar / 2;
-    var ea = -Math.PI / 2 + ar / 2;
-    var cx = nameX, cy = nameY + r;
-    var x1 = cx + r * Math.cos(sa), y1 = cy + r * Math.sin(sa);
-    var x2 = cx + r * Math.cos(ea), y2 = cy + r * Math.sin(ea);
-    nameElement = '<defs><path id="np" d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"/></defs>' +
-      '<text font-family="Anton, Impact, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLS + '><textPath href="#np" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
-  } else {
-    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLS + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
-  }
-
-  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + numLS + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
-
-  var logoElements = '';
-  var logoImg = getCurrentLogoImage();
+    var tw = nfs * state.name.length * 0.6 + state.nameSpacing * (state.name.length - 1);
+    var ar = (state.arc * Math.PI) / 180, r = tw / ar * 1.2;
+    var sA = -Math.PI/2 - ar/2, eA = -Math.PI/2 + ar/2, cx = nmX, cy = nmY + r;
+    ne = '<defs><path id="np" d="M ' + (cx + r * Math.cos(sA)) + ' ' + (cy + r * Math.sin(sA)) + ' A ' + r + ' ' + r + ' 0 0 1 ' + (cx + r * Math.cos(eA)) + ' ' + (cy + r * Math.sin(eA)) + '"/></defs><text font-family="Anton,Impact,sans-serif" font-size="' + nfs + '" fill="' + state.fillColor + '"' + sa + nls + '><textPath href="#np" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
+  } else ne = '<text x="' + nmX + '" y="' + nmY + '" font-family="Anton,Impact,sans-serif" font-size="' + nfs + '" fill="' + state.fillColor + '"' + sa + nls + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
+  var nue = '<text x="' + nuX + '" y="' + nuY + '" font-family="Anton,Impact,sans-serif" font-size="' + nufs + '" fill="' + state.fillColor + '"' + nsa + nuls + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
+  var le = ''; var logoImg = getCurrentLogoImage();
   if (logoImg && state.logos.length > 0) {
-    var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (logoImg.width / logoImg.height);
-    var tc = document.createElement('canvas');
-    tc.width = logoImg.width; tc.height = logoImg.height;
-    var tctx = tc.getContext('2d');
-    tctx.drawImage(logoImg, 0, 0);
-    var dataUrl = tc.toDataURL('image/png');
-    for (var i = 0; i < state.logos.length; i++) {
-      var lx = (state.logos[i].x / 100) * w - logoW / 2;
-      var ly = (state.logos[i].y / 100) * h - logoH / 2;
-      logoElements += '<image href="' + dataUrl + '" x="' + lx + '" y="' + ly + '" width="' + logoW + '" height="' + logoH + '"/>';
-    }
+    var lH = (state.logoSize / 100) * h, lW = lH * (logoImg.width / logoImg.height);
+    var tc = document.createElement('canvas'); tc.width = logoImg.width; tc.height = logoImg.height; tc.getContext('2d').drawImage(logoImg, 0, 0); var du = tc.toDataURL('image/png');
+    for (var i = 0; i < state.logos.length; i++) le += '<image href="' + du + '" x="' + ((state.logos[i].x / 100) * w - lW/2) + '" y="' + ((state.logos[i].y / 100) * h - lH/2) + '" width="' + lW + '" height="' + lH + '"/>';
   }
-
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n' + bgRect + '\n' + nameElement + '\n' + numberElement + '\n' + logoElements + '\n</svg>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n' + bg + '\n' + ne + '\n' + nue + '\n' + le + '\n</svg>';
 }
 
 // ============ INIT ============
-syncLogos();
-refreshLogoUI();
-render();
+syncLogos(); refreshLogoUI(); refreshProfileUI(); render();
 </script>
 </body>
 </html>
