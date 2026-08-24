@@ -398,6 +398,10 @@
     margin-top: 8px;
   }
 
+  .center-btn {
+    margin-top: 4px;
+  }
+
   @media (max-width: 768px) {
     .app {
       grid-template-columns: 1fr;
@@ -493,7 +497,8 @@
 
     <div class="panel-section">
       <h3>Layout</h3>
-      <p class="hint">Drag name, number, or logo on canvas to reposition. Snaps to grid.</p>
+      <p class="hint">Drag name, number, or logo freely. Grid snaps as a guide. Green line shows center alignment.</p>
+      <button class="btn btn-secondary btn-small center-btn" onclick="centerAll()">Centre All Horizontally</button>
       <div class="slider-field">
         <div class="slider-header">
           <label>Name Arc</label>
@@ -546,6 +551,10 @@
       <div class="toggle-row">
         <label>Show Grid</label>
         <div class="toggle" id="gridToggle"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Snap to Grid</label>
+        <div class="toggle active" id="snapToggle"></div>
       </div>
     </div>
 
@@ -615,6 +624,7 @@ var state = {
   outlineThickness: 4,
   gridSize: 20,
   showGrid: false,
+  snapToGrid: true,
   nameX: 50,
   nameY: 20,
   numberX: 50,
@@ -623,6 +633,12 @@ var state = {
   logoX: 50,
   logoY: 82,
   logoSize: 8
+};
+
+// Snap guides state (for visual feedback)
+var snapGuides = {
+  centerX: false,
+  centerY: false
 };
 
 // Drag state
@@ -694,6 +710,7 @@ setupToggle('transparentToggle', 'transparent', function() {
 });
 setupToggle('outlineToggle', 'showOutline');
 setupToggle('gridToggle', 'showGrid');
+setupToggle('snapToggle', 'snapToGrid');
 
 // Dimensions
 var widthInput = document.getElementById('canvasWidth');
@@ -800,8 +817,17 @@ function removeLogo() {
   render();
 }
 
-// Snap to grid
-function snapToGrid(value, gridSize) {
+// Centre all elements horizontally
+function centerAll() {
+  state.nameX = 50;
+  state.numberX = 50;
+  state.logoX = 50;
+  render();
+}
+
+// Snap value to grid (only if snap enabled)
+function snapValue(value, gridSize) {
+  if (!state.snapToGrid) return value;
   return Math.round(value / gridSize) * gridSize;
 }
 
@@ -831,13 +857,13 @@ function hitTest(px, py) {
   var w = state.width;
   var h = state.height;
 
-  // Logo hit area (check first, it's smallest)
+  // Logo hit area
   if (state.logoImage) {
     var logoX = (state.logoX / 100) * w;
     var logoY = (state.logoY / 100) * h;
     var logoH = (state.logoSize / 100) * h;
     var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-    if (px > logoX - logoW/2 - 10 && px < logoX + logoW/2 + 10 && py > logoY - logoH/2 - 10 && py < logoY + logoH/2 + 10) {
+    if (px > logoX - logoW/2 - 15 && px < logoX + logoW/2 + 15 && py > logoY - logoH/2 - 15 && py < logoY + logoH/2 + 15) {
       return 'logo';
     }
   }
@@ -857,8 +883,8 @@ function hitTest(px, py) {
   var nameX = (state.nameX / 100) * w;
   var nameY = (state.nameY / 100) * h;
   var nameFontSize = (state.nameSize / 100) * w;
-  var nameHalfW = state.name.length * nameFontSize * 0.4;
-  var nameHalfH = nameFontSize * 0.8;
+  var nameHalfW = Math.max(state.name.length * nameFontSize * 0.5, nameFontSize * 2);
+  var nameHalfH = nameFontSize * 1.2;
 
   if (px > nameX - nameHalfW && px < nameX + nameHalfW && py > nameY - nameHalfH && py < nameY + nameHalfH) {
     return 'name';
@@ -896,18 +922,30 @@ function moveDrag(e) {
   var rawX = pos.x - drag.offsetX;
   var rawY = pos.y - drag.offsetY;
 
+  // Apply grid snap if enabled
   var grid = state.gridSize;
-  var snappedX = snapToGrid(rawX, grid);
-  var snappedY = snapToGrid(rawY, grid);
+  var finalX = state.snapToGrid ? snapValue(rawX, grid) : rawX;
+  var finalY = state.snapToGrid ? snapValue(rawY, grid) : rawY;
 
-  // Snap to center X if close
+  // Check proximity to center for visual guide (not forced)
   var centerX = state.width / 2;
-  if (Math.abs(snappedX - centerX) < grid * 1.5) {
-    snappedX = centerX;
+  var centerY = state.height / 2;
+  var snapThreshold = grid * 0.75;
+
+  snapGuides.centerX = Math.abs(finalX - centerX) < snapThreshold;
+  snapGuides.centerY = Math.abs(finalY - centerY) < snapThreshold;
+
+  // Gentle center snap: only snap if VERY close (within half a grid unit)
+  if (snapGuides.centerX && state.snapToGrid) {
+    finalX = centerX;
+  }
+  if (snapGuides.centerY && state.snapToGrid) {
+    finalY = centerY;
   }
 
-  state[drag.target + 'X'] = (snappedX / state.width) * 100;
-  state[drag.target + 'Y'] = (snappedY / state.height) * 100;
+  // Convert to percentage (no clamping, full freedom)
+  state[drag.target + 'X'] = (finalX / state.width) * 100;
+  state[drag.target + 'Y'] = (finalY / state.height) * 100;
 
   render();
 }
@@ -915,9 +953,12 @@ function moveDrag(e) {
 function endDrag() {
   drag.active = false;
   drag.target = null;
+  snapGuides.centerX = false;
+  snapGuides.centerY = false;
+  render();
 }
 
-// Draw text with letter spacing (manual character-by-character rendering)
+// Draw text with letter spacing
 function drawTextWithSpacing(text, x, y, spacing, align) {
   if (!text) return;
   if (spacing === 0) {
@@ -987,48 +1028,72 @@ function drawArcText(text, centerX, centerY, radius, arcAngle, spacing) {
   });
 }
 
-// Draw grid overlay
+// Draw grid and guides
 function drawGrid() {
-  if (!state.showGrid) return;
-
   var w = state.width;
   var h = state.height;
   var grid = state.gridSize;
 
-  ctx.save();
-  ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
-  ctx.lineWidth = 1;
+  if (state.showGrid) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(100, 150, 255, 0.12)';
+    ctx.lineWidth = 1;
 
-  for (var x = grid; x < w; x += grid) {
+    for (var x = grid; x < w; x += grid) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+
+    for (var y = grid; y < h; y += grid) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    // Center crosshair (always shown with grid)
+    ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
+    ctx.moveTo(w / 2, 0);
+    ctx.lineTo(w / 2, h);
     ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
+
+    ctx.restore();
   }
 
-  for (var y = grid; y < h; y += grid) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
-    ctx.stroke();
+  // Snap guide lines (bright green, only during drag)
+  if (drag.active) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(76, 175, 124, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+
+    if (snapGuides.centerX) {
+      ctx.beginPath();
+      ctx.moveTo(w / 2, 0);
+      ctx.lineTo(w / 2, h);
+      ctx.stroke();
+    }
+
+    if (snapGuides.centerY) {
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
-
-  // Center lines
-  ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 4]);
-
-  ctx.beginPath();
-  ctx.moveTo(w / 2, 0);
-  ctx.lineTo(w / 2, h);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(0, h / 2);
-  ctx.lineTo(w, h / 2);
-  ctx.stroke();
-
-  ctx.restore();
 }
 
 // Main render
@@ -1086,17 +1151,20 @@ function render() {
   if (state.logoImage) {
     var logoH = (state.logoSize / 100) * h;
     var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-    var logoX = (state.logoX / 100) * w - logoW / 2;
-    var logoY = (state.logoY / 100) * h - logoH / 2;
+    var logoDrawX = (state.logoX / 100) * w - logoW / 2;
+    var logoDrawY = (state.logoY / 100) * h - logoH / 2;
 
-    ctx.drawImage(state.logoImage, logoX, logoY, logoW, logoH);
+    ctx.drawImage(state.logoImage, logoDrawX, logoDrawY, logoW, logoH);
   }
 }
 
 // Export
 function exportImage(format) {
   var gridWasVisible = state.showGrid;
+  var snapWasVisible = snapGuides.centerX || snapGuides.centerY;
   state.showGrid = false;
+  snapGuides.centerX = false;
+  snapGuides.centerY = false;
   render();
 
   var link = document.createElement('a');
@@ -1157,8 +1225,8 @@ function generateSVG() {
   var strokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + outlineWidth + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
   var numStrokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (outlineWidth * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
 
-  var nameLetterSpacing = state.nameSpacing > 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
-  var numLetterSpacing = state.numberSpacing > 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
+  var nameLetterSpacing = state.nameSpacing !== 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
+  var numLetterSpacing = state.numberSpacing !== 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
 
   var nameElement = '';
   if (state.arc > 0 && state.name) {
@@ -1187,7 +1255,6 @@ function generateSVG() {
 
   var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + numLetterSpacing + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
 
-  // Logo as embedded image in SVG
   var logoElement = '';
   if (state.logoImage) {
     var logoH = (state.logoSize / 100) * h;
@@ -1195,7 +1262,6 @@ function generateSVG() {
     var lx = (state.logoX / 100) * w - logoW / 2;
     var ly = (state.logoY / 100) * h - logoH / 2;
 
-    // Get base64 from a temp canvas
     var tc = document.createElement('canvas');
     tc.width = state.logoImage.width;
     tc.height = state.logoImage.height;
