@@ -348,6 +348,16 @@
     font-size: 0.75rem;
   }
 
+  .btn-danger {
+    background: #4a2030;
+    color: #f08080;
+    border: 1px solid #5a2838;
+  }
+
+  .btn-danger:hover {
+    background: #5a2838;
+  }
+
   .dimensions-display {
     font-size: 0.7rem;
     color: var(--text-dim);
@@ -363,10 +373,20 @@
     padding: 4px 0;
   }
 
+  .logo-preset-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .logo-preset-row select {
+    flex: 1;
+  }
+
   .logo-upload-area {
     border: 2px dashed var(--border);
     border-radius: 8px;
-    padding: 16px;
+    padding: 12px;
     text-align: center;
     cursor: pointer;
     transition: border-color 150ms ease-out;
@@ -374,18 +394,6 @@
 
   .logo-upload-area:hover {
     border-color: var(--accent);
-  }
-
-  .logo-upload-area.has-logo {
-    border-style: solid;
-    padding: 8px;
-  }
-
-  .logo-upload-area img {
-    max-width: 80px;
-    max-height: 60px;
-    display: block;
-    margin: 0 auto 8px;
   }
 
   .logo-upload-area p {
@@ -396,12 +404,65 @@
   .logo-controls {
     display: flex;
     gap: 8px;
-    margin-top: 8px;
     flex-wrap: wrap;
+  }
+
+  .saved-logos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .saved-logo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: var(--surface);
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .saved-logo-item span {
+    color: var(--text-dim);
+  }
+
+  .saved-logo-item button {
+    background: none;
+    border: none;
+    color: #f08080;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 2px 6px;
   }
 
   .center-btn {
     margin-top: 4px;
+  }
+
+  .color-toggle-group {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .color-toggle-group button {
+    flex: 1;
+    padding: 6px 12px;
+    border: none;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease-out;
+  }
+
+  .color-toggle-group button.active {
+    background: var(--accent);
+    color: #1a1a2e;
   }
 
   @media (max-width: 768px) {
@@ -561,11 +622,20 @@
     </div>
 
     <div class="panel-section">
-      <h3>Logos</h3>
-      <p class="hint">One logo per digit. Each is independently draggable. Change the number to add/remove logos.</p>
-      <div class="logo-upload-area" id="logoUploadArea">
-        <p>Click or drag to upload PL logo</p>
-        <input type="file" id="logoFileInput" accept="image/*" style="display:none">
+      <h3>Logos (per digit)</h3>
+      <p class="hint">Each logo is draggable independently. Upload once per preset, saved to this device permanently.</p>
+      <div class="field">
+        <label>Select Logo</label>
+        <select id="logoPresetSelect">
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Logo Color</label>
+        <div class="color-toggle-group" id="logoColorToggle">
+          <button class="active" data-color="black">Black</button>
+          <button data-color="white">White</button>
+        </div>
       </div>
       <div class="slider-field">
         <div class="slider-header">
@@ -574,10 +644,16 @@
         </div>
         <input type="range" id="logoSize" min="3" max="20" value="8">
       </div>
-      <div class="logo-controls" id="logoControls" style="display:none">
-        <button class="btn btn-secondary btn-small" onclick="removeLogo()">Remove Logo</button>
+      <div class="logo-controls">
         <button class="btn btn-secondary btn-small" onclick="resetLogoPositions()">Reset Positions</button>
       </div>
+
+      <h3 style="margin-top: 12px;">Manage Presets</h3>
+      <div class="logo-upload-area" id="logoUploadArea">
+        <p>Upload logo to save as preset</p>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none">
+      </div>
+      <div class="saved-logos-list" id="savedLogosList"></div>
     </div>
 
     <div class="export-section">
@@ -608,7 +684,141 @@ fontFace.load().then(function(loaded) {
   render();
 });
 
-// State
+// ============ LOGO PRESET SYSTEM (localStorage) ============
+
+var STORAGE_KEY = 'nameset_logos';
+
+function getSavedLogos() {
+  try {
+    var data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLogos(logos) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logos));
+  } catch (e) {
+    alert('Storage full. Try removing some saved logos.');
+  }
+}
+
+function addLogoPreset(name, dataUrl) {
+  var logos = getSavedLogos();
+  // Check if name already exists, replace it
+  var existing = logos.findIndex(function(l) { return l.name === name; });
+  if (existing >= 0) {
+    logos[existing].data = dataUrl;
+  } else {
+    logos.push({ name: name, data: dataUrl });
+  }
+  saveLogos(logos);
+  refreshLogoUI();
+}
+
+function deleteLogoPreset(name) {
+  var logos = getSavedLogos();
+  logos = logos.filter(function(l) { return l.name !== name; });
+  saveLogos(logos);
+  if (state.selectedLogo === name) {
+    state.selectedLogo = 'none';
+    state.logoImage = null;
+    state.logoImageWhite = null;
+    document.getElementById('logoPresetSelect').value = 'none';
+  }
+  refreshLogoUI();
+  render();
+}
+
+function refreshLogoUI() {
+  var logos = getSavedLogos();
+  var select = document.getElementById('logoPresetSelect');
+  var list = document.getElementById('savedLogosList');
+
+  // Refresh dropdown
+  select.innerHTML = '<option value="none">None</option>';
+  logos.forEach(function(logo) {
+    var opt = document.createElement('option');
+    opt.value = logo.name;
+    opt.textContent = logo.name;
+    select.appendChild(opt);
+  });
+
+  // Restore selection
+  if (state.selectedLogo && state.selectedLogo !== 'none') {
+    select.value = state.selectedLogo;
+  }
+
+  // Refresh saved list
+  list.innerHTML = '';
+  logos.forEach(function(logo) {
+    var item = document.createElement('div');
+    item.className = 'saved-logo-item';
+    item.innerHTML = '<span>' + logo.name + '</span><button onclick="deleteLogoPreset(\'' + logo.name.replace(/'/g, "\\'") + '\')">Delete</button>';
+    list.appendChild(item);
+  });
+}
+
+function loadLogoFromPreset(name) {
+  if (name === 'none') {
+    state.logoImage = null;
+    state.logoImageWhite = null;
+    state.selectedLogo = 'none';
+    render();
+    return;
+  }
+
+  var logos = getSavedLogos();
+  var logo = logos.find(function(l) { return l.name === name; });
+  if (!logo) return;
+
+  var img = new Image();
+  img.onload = function() {
+    state.logoImage = img;
+    state.selectedLogo = name;
+    // Generate white version
+    generateWhiteVersion(img);
+    syncLogos();
+    render();
+  };
+  img.src = logo.data;
+}
+
+// Generate white version of logo using canvas compositing
+function generateWhiteVersion(sourceImg) {
+  var tc = document.createElement('canvas');
+  tc.width = sourceImg.width;
+  tc.height = sourceImg.height;
+  var tctx = tc.getContext('2d');
+
+  // Draw original
+  tctx.drawImage(sourceImg, 0, 0);
+
+  // Make all opaque pixels white
+  tctx.globalCompositeOperation = 'source-in';
+  tctx.fillStyle = '#ffffff';
+  tctx.fillRect(0, 0, tc.width, tc.height);
+
+  var whiteImg = new Image();
+  whiteImg.onload = function() {
+    state.logoImageWhite = whiteImg;
+    render();
+  };
+  whiteImg.src = tc.toDataURL('image/png');
+}
+
+// Get the current logo image based on color selection
+function getCurrentLogoImage() {
+  if (state.logoColor === 'white' && state.logoImageWhite) {
+    return state.logoImageWhite;
+  }
+  return state.logoImage;
+}
+
+// ============ STATE ============
+
 var state = {
   name: 'LAMMENS',
   number: '11',
@@ -633,8 +843,10 @@ var state = {
   numberX: 50,
   numberY: 58,
   logoImage: null,
+  logoImageWhite: null,
+  logoColor: 'black',
+  selectedLogo: 'none',
   logoSize: 8,
-  // Individual logo positions (one per digit), stored as % of canvas
   logos: [
     { x: 40, y: 82 },
     { x: 60, y: 82 }
@@ -642,18 +854,10 @@ var state = {
 };
 
 // Snap guides state
-var snapGuides = {
-  centerX: false,
-  centerY: false
-};
+var snapGuides = { centerX: false, centerY: false };
 
 // Drag state
-var drag = {
-  active: false,
-  target: null, // 'name', 'number', or 'logo-0', 'logo-1', etc.
-  offsetX: 0,
-  offsetY: 0
-};
+var drag = { active: false, target: null, offsetX: 0, offsetY: 0 };
 
 function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -668,7 +872,6 @@ function canWebShare() {
 function syncLogos() {
   var digitCount = state.number.length;
   while (state.logos.length < digitCount) {
-    // Add new logo with a default position spread out
     var idx = state.logos.length;
     state.logos.push({ x: 30 + idx * 20, y: 82 });
   }
@@ -677,7 +880,6 @@ function syncLogos() {
   }
 }
 
-// Reset logo positions to evenly spaced below number
 function resetLogoPositions() {
   var digitCount = state.number.length;
   var numX = state.numberX;
@@ -690,7 +892,8 @@ function resetLogoPositions() {
   render();
 }
 
-// Bind inputs
+// ============ INPUT BINDINGS ============
+
 function bindInput(id, key, transform) {
   transform = transform || function(v) { return v; };
   var el = document.getElementById(id);
@@ -714,17 +917,15 @@ bindInput('outlineThickness', 'outlineThickness', Number);
 bindInput('gridSize', 'gridSize', Number);
 bindInput('logoSize', 'logoSize', Number);
 
-// Color sync helper
+// Color sync
 function syncColor(pickerId, hexId, stateKey) {
   var picker = document.getElementById(pickerId);
   var hex = document.getElementById(hexId);
-
   picker.addEventListener('input', function() {
     state[stateKey] = picker.value;
     hex.value = picker.value;
     render();
   });
-
   hex.addEventListener('input', function() {
     if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) {
       state[stateKey] = hex.value;
@@ -756,6 +957,22 @@ setupToggle('outlineToggle', 'showOutline');
 setupToggle('gridToggle', 'showGrid');
 setupToggle('snapToggle', 'snapToGrid');
 
+// Logo color toggle
+var logoColorBtns = document.querySelectorAll('#logoColorToggle button');
+logoColorBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    logoColorBtns.forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.logoColor = btn.getAttribute('data-color');
+    render();
+  });
+});
+
+// Logo preset select
+document.getElementById('logoPresetSelect').addEventListener('change', function() {
+  loadLogoFromPreset(this.value);
+});
+
 // Dimensions
 var widthInput = document.getElementById('canvasWidth');
 var heightInput = document.getElementById('canvasHeight');
@@ -777,7 +994,7 @@ heightInput.addEventListener('change', function() {
   render();
 });
 
-// Slider value displays
+// Slider displays
 document.getElementById('nameArc').addEventListener('input', function() {
   document.getElementById('arcValue').textContent = this.value + '\u00b0';
 });
@@ -803,10 +1020,10 @@ document.getElementById('logoSize').addEventListener('input', function() {
   document.getElementById('logoSizeValue').textContent = this.value + '%';
 });
 
-// Logo upload
+// ============ LOGO UPLOAD ============
+
 var logoUploadArea = document.getElementById('logoUploadArea');
 var logoFileInput = document.getElementById('logoFileInput');
-var logoControls = document.getElementById('logoControls');
 
 logoUploadArea.addEventListener('click', function() {
   logoFileInput.click();
@@ -826,48 +1043,38 @@ logoUploadArea.addEventListener('drop', function(e) {
   logoUploadArea.style.borderColor = '';
   var file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) {
-    loadLogoFile(file);
+    promptAndSaveLogo(file);
   }
 });
 
 logoFileInput.addEventListener('change', function() {
   if (this.files[0]) {
-    loadLogoFile(this.files[0]);
+    promptAndSaveLogo(this.files[0]);
+    this.value = '';
   }
 });
 
-function loadLogoFile(file) {
+function promptAndSaveLogo(file) {
+  var name = prompt('Name this logo preset (e.g. "Classic PL 1992-2007"):');
+  if (!name || !name.trim()) return;
+  name = name.trim();
+
   var reader = new FileReader();
   reader.onload = function(e) {
-    var img = new Image();
-    img.onload = function() {
-      state.logoImage = img;
-      logoUploadArea.classList.add('has-logo');
-      logoUploadArea.innerHTML = '<img src="' + e.target.result + '"><p>' + file.name + '</p>';
-      logoControls.style.display = 'flex';
-      syncLogos();
-      resetLogoPositions();
-      render();
-    };
-    img.src = e.target.result;
+    addLogoPreset(name, e.target.result);
+    // Auto-select the newly added logo
+    state.selectedLogo = name;
+    document.getElementById('logoPresetSelect').value = name;
+    loadLogoFromPreset(name);
   };
   reader.readAsDataURL(file);
 }
 
-function removeLogo() {
-  state.logoImage = null;
-  logoUploadArea.classList.remove('has-logo');
-  logoUploadArea.innerHTML = '<p>Click or drag to upload PL logo</p>';
-  logoControls.style.display = 'none';
-  logoFileInput.value = '';
-  render();
-}
+// ============ CENTRE ALL ============
 
-// Centre all elements horizontally
 function centerAll() {
   state.nameX = 50;
   state.numberX = 50;
-  // Centre logos too
   var digitCount = state.logos.length;
   if (digitCount > 0) {
     var spacing = digitCount > 1 ? 60 / digitCount : 0;
@@ -879,19 +1086,20 @@ function centerAll() {
   render();
 }
 
-// Snap value to grid
+// ============ SNAP ============
+
 function snapValue(value, gridSize) {
   if (!state.snapToGrid) return value;
   return Math.round(value / gridSize) * gridSize;
 }
 
-// Get mouse/touch position relative to canvas
+// ============ INTERACTION ============
+
 function getCanvasPos(e) {
   var rect = canvas.getBoundingClientRect();
   var scaleX = state.width / rect.width;
   var scaleY = state.height / rect.height;
   var clientX, clientY;
-
   if (e.touches) {
     clientX = e.touches[0].clientX;
     clientY = e.touches[0].clientY;
@@ -899,23 +1107,21 @@ function getCanvasPos(e) {
     clientX = e.clientX;
     clientY = e.clientY;
   }
-
   return {
     x: (clientX - rect.left) * scaleX,
     y: (clientY - rect.top) * scaleY
   };
 }
 
-// Hit test
 function hitTest(px, py) {
   var w = state.width;
   var h = state.height;
+  var logoImg = getCurrentLogoImage();
 
-  // Check logos first (they're smallest, most precise targets)
-  if (state.logoImage) {
+  // Check logos first
+  if (logoImg) {
     var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-
+    var logoW = logoH * (logoImg.width / logoImg.height);
     for (var i = state.logos.length - 1; i >= 0; i--) {
       var lx = (state.logos[i].x / 100) * w;
       var ly = (state.logos[i].y / 100) * h;
@@ -926,32 +1132,28 @@ function hitTest(px, py) {
     }
   }
 
-  // Number hit area
+  // Number
   var numX = (state.numberX / 100) * w;
   var numY = (state.numberY / 100) * h;
   var numFontSize = (state.numberSize / 100) * h;
-  var numHalfW = numFontSize * 0.8;
-  var numHalfH = numFontSize * 0.6;
-
-  if (px > numX - numHalfW && px < numX + numHalfW && py > numY - numHalfH && py < numY + numHalfH) {
+  if (px > numX - numFontSize * 0.8 && px < numX + numFontSize * 0.8 &&
+      py > numY - numFontSize * 0.6 && py < numY + numFontSize * 0.6) {
     return 'number';
   }
 
-  // Name hit area
+  // Name
   var nameX = (state.nameX / 100) * w;
   var nameY = (state.nameY / 100) * h;
   var nameFontSize = (state.nameSize / 100) * w;
   var nameHalfW = Math.max(state.name.length * nameFontSize * 0.5, nameFontSize * 2);
-  var nameHalfH = nameFontSize * 1.2;
-
-  if (px > nameX - nameHalfW && px < nameX + nameHalfW && py > nameY - nameHalfH && py < nameY + nameHalfH) {
+  if (px > nameX - nameHalfW && px < nameX + nameHalfW &&
+      py > nameY - nameFontSize * 1.2 && py < nameY + nameFontSize * 1.2) {
     return 'name';
   }
 
   return null;
 }
 
-// Drag handlers
 canvas.addEventListener('mousedown', startDrag);
 canvas.addEventListener('touchstart', startDrag);
 document.addEventListener('mousemove', moveDrag);
@@ -963,11 +1165,9 @@ function startDrag(e) {
   e.preventDefault();
   var pos = getCanvasPos(e);
   var target = hitTest(pos.x, pos.y);
-
   if (target) {
     drag.active = true;
     drag.target = target;
-
     if (target.startsWith('logo-')) {
       var idx = parseInt(target.split('-')[1]);
       drag.offsetX = pos.x - (state.logos[idx].x / 100) * state.width;
@@ -982,7 +1182,6 @@ function startDrag(e) {
 function moveDrag(e) {
   if (!drag.active) return;
   e.preventDefault();
-
   var pos = getCanvasPos(e);
   var rawX = pos.x - drag.offsetX;
   var rawY = pos.y - drag.offsetY;
@@ -991,7 +1190,6 @@ function moveDrag(e) {
   var finalX = state.snapToGrid ? snapValue(rawX, grid) : rawX;
   var finalY = state.snapToGrid ? snapValue(rawY, grid) : rawY;
 
-  // Check proximity to center for visual guide
   var centerX = state.width / 2;
   var centerY = state.height / 2;
   var snapThreshold = grid * 0.75;
@@ -999,14 +1197,9 @@ function moveDrag(e) {
   snapGuides.centerX = Math.abs(finalX - centerX) < snapThreshold;
   snapGuides.centerY = Math.abs(finalY - centerY) < snapThreshold;
 
-  if (snapGuides.centerX && state.snapToGrid) {
-    finalX = centerX;
-  }
-  if (snapGuides.centerY && state.snapToGrid) {
-    finalY = centerY;
-  }
+  if (snapGuides.centerX && state.snapToGrid) finalX = centerX;
+  if (snapGuides.centerY && state.snapToGrid) finalY = centerY;
 
-  // Apply position
   if (drag.target.startsWith('logo-')) {
     var idx = parseInt(drag.target.split('-')[1]);
     state.logos[idx].x = (finalX / state.width) * 100;
@@ -1015,7 +1208,6 @@ function moveDrag(e) {
     state[drag.target + 'X'] = (finalX / state.width) * 100;
     state[drag.target + 'Y'] = (finalY / state.height) * 100;
   }
-
   render();
 }
 
@@ -1027,209 +1219,145 @@ function endDrag() {
   render();
 }
 
-// Draw text with letter spacing
+// ============ DRAWING ============
+
 function drawTextWithSpacing(text, x, y, spacing, align) {
   if (!text) return;
-
   if (spacing === 0) {
     ctx.textAlign = align || 'center';
     ctx.textBaseline = 'middle';
-    if (state.showOutline) {
-      ctx.strokeText(text, x, y);
-    }
+    if (state.showOutline) ctx.strokeText(text, x, y);
     ctx.fillText(text, x, y);
     return;
   }
-
   var chars = text.split('');
   var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
   var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
-
   var startX = x - totalWidth / 2;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-
   chars.forEach(function(char, i) {
-    if (state.showOutline) {
-      ctx.strokeText(char, startX, y);
-    }
+    if (state.showOutline) ctx.strokeText(char, startX, y);
     ctx.fillText(char, startX, y);
     startX += charWidths[i] + spacing;
   });
 }
 
-// Draw arced text with letter spacing and outline
 function drawArcText(text, centerX, centerY, radius, arcAngle, spacing) {
   if (!text) return;
-
   if (arcAngle === 0) {
     drawTextWithSpacing(text, centerX, centerY, spacing, 'center');
     return;
   }
-
   var totalAngle = (arcAngle * Math.PI) / 180;
   var chars = text.split('');
   var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
   var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0) + spacing * (chars.length - 1);
-
   var anglePerPixel = totalAngle / totalWidth;
   var currentAngle = -Math.PI / 2 - totalAngle / 2;
-
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-
   chars.forEach(function(char, i) {
     var halfCharAngle = (charWidths[i] / 2) * anglePerPixel;
     currentAngle += halfCharAngle;
-
     var charX = centerX + radius * Math.cos(currentAngle);
     var charY = centerY + radius * Math.sin(currentAngle);
-
     ctx.save();
     ctx.translate(charX, charY);
     ctx.rotate(currentAngle + Math.PI / 2);
-    if (state.showOutline) {
-      ctx.strokeText(char, 0, 0);
-    }
+    if (state.showOutline) ctx.strokeText(char, 0, 0);
     ctx.fillText(char, 0, 0);
     ctx.restore();
-
     currentAngle += halfCharAngle + spacing * anglePerPixel;
   });
 }
 
-// Draw grid and guides
 function drawGrid() {
   var w = state.width;
   var h = state.height;
   var grid = state.gridSize;
-
   if (state.showGrid) {
     ctx.save();
     ctx.strokeStyle = 'rgba(100, 150, 255, 0.12)';
     ctx.lineWidth = 1;
-
     for (var x = grid; x < w; x += grid) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
     }
-
     for (var y = grid; y < h; y += grid) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
     }
-
     ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 4]);
-
-    ctx.beginPath();
-    ctx.moveTo(w / 2, 0);
-    ctx.lineTo(w / 2, h);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(0, h / 2);
-    ctx.lineTo(w, h / 2);
-    ctx.stroke();
-
+    ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
     ctx.restore();
   }
-
-  // Snap guide lines during drag
   if (drag.active) {
     ctx.save();
     ctx.strokeStyle = 'rgba(76, 175, 124, 0.8)';
     ctx.lineWidth = 2;
     ctx.setLineDash([]);
-
-    if (snapGuides.centerX) {
-      ctx.beginPath();
-      ctx.moveTo(w / 2, 0);
-      ctx.lineTo(w / 2, h);
-      ctx.stroke();
-    }
-
-    if (snapGuides.centerY) {
-      ctx.beginPath();
-      ctx.moveTo(0, h / 2);
-      ctx.lineTo(w, h / 2);
-      ctx.stroke();
-    }
-
+    if (snapGuides.centerX) { ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke(); }
+    if (snapGuides.centerY) { ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke(); }
     ctx.restore();
   }
 }
 
-// Main render
 function render() {
   var w = state.width;
   var h = state.height;
-
   ctx.clearRect(0, 0, w, h);
-
   if (!state.transparent) {
     ctx.fillStyle = state.bgColor;
     ctx.fillRect(0, 0, w, h);
   }
-
   drawGrid();
 
-  // Configure text style
   var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
-
   ctx.fillStyle = state.fillColor;
   ctx.strokeStyle = state.outlineColor;
   ctx.lineWidth = outlineWidth;
   ctx.lineJoin = 'round';
   ctx.miterLimit = 2;
 
-  // Draw name
+  // Name
   var nameFontSize = (state.nameSize / 100) * w;
   ctx.font = nameFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
-
   var nameX = (state.nameX / 100) * w;
   var nameY = (state.nameY / 100) * h;
-
   if (state.arc > 0) {
     var textWidth = ctx.measureText(state.name).width + state.nameSpacing * (state.name.length - 1);
     var arcRad = (state.arc * Math.PI) / 180;
     var radius = textWidth / arcRad * 1.2;
-    var arcCenterY = nameY + radius;
-
-    drawArcText(state.name, nameX, arcCenterY, radius, state.arc, state.nameSpacing);
+    drawArcText(state.name, nameX, nameY + radius, radius, state.arc, state.nameSpacing);
   } else {
     drawTextWithSpacing(state.name, nameX, nameY, state.nameSpacing, 'center');
   }
 
-  // Draw number
+  // Number
   var numFontSize = (state.numberSize / 100) * h;
   ctx.font = numFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
   ctx.lineWidth = outlineWidth * 1.2;
-
   var numX = (state.numberX / 100) * w;
   var numY = (state.numberY / 100) * h;
-
   drawTextWithSpacing(state.number, numX, numY, state.numberSpacing, 'center');
 
-  // Draw logos (each independently positioned)
-  if (state.logoImage) {
+  // Logos
+  var logoImg = getCurrentLogoImage();
+  if (logoImg) {
     var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-
+    var logoW = logoH * (logoImg.width / logoImg.height);
     for (var i = 0; i < state.logos.length; i++) {
       var lx = (state.logos[i].x / 100) * w - logoW / 2;
       var ly = (state.logos[i].y / 100) * h - logoH / 2;
-      ctx.drawImage(state.logoImage, lx, ly, logoW, logoH);
+      ctx.drawImage(logoImg, lx, ly, logoW, logoH);
     }
   }
 }
 
-// Export
+// ============ EXPORT ============
+
 function exportImage(format) {
   var gridWasVisible = state.showGrid;
   state.showGrid = false;
@@ -1244,13 +1372,8 @@ function exportImage(format) {
   if (format === 'svg') {
     var svg = generateSVG();
     var blob = new Blob([svg], { type: 'image/svg+xml' });
-
-    if (canWebShare()) {
-      var file = new File([blob], filename + '.svg', { type: 'image/svg+xml' });
-      shareFile(file);
-    } else {
-      downloadBlob(blob, filename + '.svg');
-    }
+    if (canWebShare()) { shareFile(new File([blob], filename + '.svg', { type: 'image/svg+xml' })); }
+    else { downloadBlob(blob, filename + '.svg'); }
   } else {
     var mimeType = 'image/png';
     var ext = 'png';
@@ -1258,7 +1381,6 @@ function exportImage(format) {
     if (format === 'webp') { mimeType = 'image/webp'; ext = 'webp'; }
 
     var exportCanvas = canvas;
-
     if (format === 'jpeg' && state.transparent) {
       exportCanvas = document.createElement('canvas');
       exportCanvas.width = state.width;
@@ -1270,19 +1392,9 @@ function exportImage(format) {
     }
 
     exportCanvas.toBlob(function(blob) {
-      if (!blob) {
-        fallbackExport(exportCanvas, mimeType, filename + '.' + ext);
-        state.showGrid = gridWasVisible;
-        render();
-        return;
-      }
-
-      if (canWebShare()) {
-        var file = new File([blob], filename + '.' + ext, { type: mimeType });
-        shareFile(file);
-      } else {
-        downloadBlob(blob, filename + '.' + ext);
-      }
+      if (!blob) { fallbackExport(exportCanvas, filename + '.' + ext); state.showGrid = gridWasVisible; render(); return; }
+      if (canWebShare()) { shareFile(new File([blob], filename + '.' + ext, { type: mimeType })); }
+      else { downloadBlob(blob, filename + '.' + ext); }
     }, mimeType, 0.95);
   }
 
@@ -1292,16 +1404,11 @@ function exportImage(format) {
 
 function shareFile(file) {
   var shareData = { files: [file] };
-
   if (navigator.canShare(shareData)) {
     navigator.share(shareData).catch(function(err) {
-      if (err.name !== 'AbortError') {
-        downloadBlob(file, file.name);
-      }
+      if (err.name !== 'AbortError') downloadBlob(file, file.name);
     });
-  } else {
-    downloadBlob(file, file.name);
-  }
+  } else { downloadBlob(file, file.name); }
 }
 
 function downloadBlob(blob, filename) {
@@ -1315,14 +1422,10 @@ function downloadBlob(blob, filename) {
   setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
-function fallbackExport(sourceCanvas, mimeType, filename) {
+function fallbackExport(sourceCanvas, filename) {
   sourceCanvas.toBlob(function(blob) {
-    if (canWebShare()) {
-      var file = new File([blob], filename.replace(/\.\w+$/, '.png'), { type: 'image/png' });
-      shareFile(file);
-    } else {
-      downloadBlob(blob, filename.replace(/\.\w+$/, '.png'));
-    }
+    if (canWebShare()) { shareFile(new File([blob], filename.replace(/\.\w+$/, '.png'), { type: 'image/png' })); }
+    else { downloadBlob(blob, filename.replace(/\.\w+$/, '.png')); }
   }, 'image/png');
 }
 
@@ -1330,11 +1433,8 @@ function generateSVG() {
   var w = state.width;
   var h = state.height;
   var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
-
   var bgRect = '';
-  if (!state.transparent) {
-    bgRect = '<rect width="' + w + '" height="' + h + '" fill="' + state.bgColor + '"/>';
-  }
+  if (!state.transparent) bgRect = '<rect width="' + w + '" height="' + h + '" fill="' + state.bgColor + '"/>';
 
   var nameFontSize = (state.nameSize / 100) * w;
   var numFontSize = (state.numberSize / 100) * h;
@@ -1345,50 +1445,37 @@ function generateSVG() {
 
   var strokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + outlineWidth + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
   var numStrokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (outlineWidth * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
-
-  var nameLetterSpacing = state.nameSpacing !== 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
-  var numLetterSpacing = state.numberSpacing !== 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
+  var nameLS = state.nameSpacing !== 0 ? ' letter-spacing="' + state.nameSpacing + '"' : '';
+  var numLS = state.numberSpacing !== 0 ? ' letter-spacing="' + state.numberSpacing + '"' : '';
 
   var nameElement = '';
   if (state.arc > 0 && state.name) {
-    var textWidth = nameFontSize * state.name.length * 0.6 + state.nameSpacing * (state.name.length - 1);
-    var arcRad = (state.arc * Math.PI) / 180;
-    var radius = textWidth / arcRad * 1.2;
-
-    var startAngle = -Math.PI / 2 - arcRad / 2;
-    var endAngle = -Math.PI / 2 + arcRad / 2;
-    var cx = nameX;
-    var cy = nameY + radius;
-
-    var x1 = cx + radius * Math.cos(startAngle);
-    var y1 = cy + radius * Math.sin(startAngle);
-    var x2 = cx + radius * Math.cos(endAngle);
-    var y2 = cy + radius * Math.sin(endAngle);
-
-    var largeArc = arcRad > Math.PI ? 1 : 0;
-
-    nameElement = '<defs><path id="namePath" d="M ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + '"/></defs>' +
-      '<text font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLetterSpacing + '>' +
-      '<textPath href="#namePath" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
+    var tw = nameFontSize * state.name.length * 0.6 + state.nameSpacing * (state.name.length - 1);
+    var ar = (state.arc * Math.PI) / 180;
+    var r = tw / ar * 1.2;
+    var sa = -Math.PI / 2 - ar / 2;
+    var ea = -Math.PI / 2 + ar / 2;
+    var cx = nameX, cy = nameY + r;
+    var x1 = cx + r * Math.cos(sa), y1 = cy + r * Math.sin(sa);
+    var x2 = cx + r * Math.cos(ea), y2 = cy + r * Math.sin(ea);
+    nameElement = '<defs><path id="np" d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"/></defs>' +
+      '<text font-family="Anton, Impact, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLS + '><textPath href="#np" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
   } else {
-    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLetterSpacing + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
+    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + nameLS + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
   }
 
-  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + numLetterSpacing + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
+  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + numLS + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
 
-  // Logos in SVG
   var logoElements = '';
-  if (state.logoImage && state.logos.length > 0) {
+  var logoImg = getCurrentLogoImage();
+  if (logoImg && state.logos.length > 0) {
     var logoH = (state.logoSize / 100) * h;
-    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-
+    var logoW = logoH * (logoImg.width / logoImg.height);
     var tc = document.createElement('canvas');
-    tc.width = state.logoImage.width;
-    tc.height = state.logoImage.height;
+    tc.width = logoImg.width; tc.height = logoImg.height;
     var tctx = tc.getContext('2d');
-    tctx.drawImage(state.logoImage, 0, 0);
+    tctx.drawImage(logoImg, 0, 0);
     var dataUrl = tc.toDataURL('image/png');
-
     for (var i = 0; i < state.logos.length; i++) {
       var lx = (state.logos[i].x / 100) * w - logoW / 2;
       var ly = (state.logos[i].y / 100) * h - logoH / 2;
@@ -1396,11 +1483,12 @@ function generateSVG() {
     }
   }
 
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n  ' + bgRect + '\n  ' + nameElement + '\n  ' + numberElement + '\n  ' + logoElements + '\n</svg>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n' + bgRect + '\n' + nameElement + '\n' + numberElement + '\n' + logoElements + '\n</svg>';
 }
 
-// Initial render
+// ============ INIT ============
 syncLogos();
+refreshLogoUI();
 render();
 </script>
 </body>
