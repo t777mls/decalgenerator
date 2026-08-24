@@ -397,6 +397,7 @@
     display: flex;
     gap: 8px;
     margin-top: 8px;
+    flex-wrap: wrap;
   }
 
   .center-btn {
@@ -498,7 +499,7 @@
 
     <div class="panel-section">
       <h3>Layout</h3>
-      <p class="hint">Drag name, number, or logo group freely. Logos stay in formation (one per digit) and move together.</p>
+      <p class="hint">Drag name, number, and each logo independently.</p>
       <button class="btn btn-secondary btn-small center-btn" onclick="centerAll()">Centre All Horizontally</button>
       <div class="slider-field">
         <div class="slider-header">
@@ -560,8 +561,8 @@
     </div>
 
     <div class="panel-section">
-      <h3>Logo (per digit)</h3>
-      <p class="hint">One logo per digit. Drag the logo group to reposition. Spacing matches number letter spacing.</p>
+      <h3>Logos</h3>
+      <p class="hint">One logo per digit. Each is independently draggable. Change the number to add/remove logos.</p>
       <div class="logo-upload-area" id="logoUploadArea">
         <p>Click or drag to upload PL logo</p>
         <input type="file" id="logoFileInput" accept="image/*" style="display:none">
@@ -575,6 +576,7 @@
       </div>
       <div class="logo-controls" id="logoControls" style="display:none">
         <button class="btn btn-secondary btn-small" onclick="removeLogo()">Remove Logo</button>
+        <button class="btn btn-secondary btn-small" onclick="resetLogoPositions()">Reset Positions</button>
       </div>
     </div>
 
@@ -597,7 +599,6 @@ var ctx = canvas.getContext('2d');
 var wrapper = document.getElementById('canvasWrapper');
 
 // PL-style font
-var PL_FONT = 'PLFont';
 var fontFace = new FontFace('PLFont', "url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8.woff2')", {
   weight: 'normal',
   style: 'normal'
@@ -632,9 +633,12 @@ var state = {
   numberX: 50,
   numberY: 58,
   logoImage: null,
-  logoX: 50,
-  logoY: 82,
-  logoSize: 8
+  logoSize: 8,
+  // Individual logo positions (one per digit), stored as % of canvas
+  logos: [
+    { x: 40, y: 82 },
+    { x: 60, y: 82 }
+  ]
 };
 
 // Snap guides state
@@ -646,15 +650,11 @@ var snapGuides = {
 // Drag state
 var drag = {
   active: false,
-  target: null,
+  target: null, // 'name', 'number', or 'logo-0', 'logo-1', etc.
   offsetX: 0,
   offsetY: 0
 };
 
-// Store last computed digit positions for logo placement
-var lastDigitPositions = [];
-
-// Detect iOS/iPadOS for share sheet
 function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -664,12 +664,41 @@ function canWebShare() {
   return navigator.share && navigator.canShare;
 }
 
+// Sync logo count with number of digits
+function syncLogos() {
+  var digitCount = state.number.length;
+  while (state.logos.length < digitCount) {
+    // Add new logo with a default position spread out
+    var idx = state.logos.length;
+    state.logos.push({ x: 30 + idx * 20, y: 82 });
+  }
+  while (state.logos.length > digitCount) {
+    state.logos.pop();
+  }
+}
+
+// Reset logo positions to evenly spaced below number
+function resetLogoPositions() {
+  var digitCount = state.number.length;
+  var numX = state.numberX;
+  var spacing = digitCount > 1 ? 60 / digitCount : 0;
+  var startX = numX - (spacing * (digitCount - 1)) / 2;
+
+  for (var i = 0; i < digitCount; i++) {
+    state.logos[i] = { x: startX + i * spacing, y: 82 };
+  }
+  render();
+}
+
 // Bind inputs
 function bindInput(id, key, transform) {
   transform = transform || function(v) { return v; };
   var el = document.getElementById(id);
   el.addEventListener('input', function() {
     state[key] = transform(el.value);
+    if (key === 'number') {
+      syncLogos();
+    }
     render();
   });
 }
@@ -816,6 +845,8 @@ function loadLogoFile(file) {
       logoUploadArea.classList.add('has-logo');
       logoUploadArea.innerHTML = '<img src="' + e.target.result + '"><p>' + file.name + '</p>';
       logoControls.style.display = 'flex';
+      syncLogos();
+      resetLogoPositions();
       render();
     };
     img.src = e.target.result;
@@ -836,7 +867,15 @@ function removeLogo() {
 function centerAll() {
   state.nameX = 50;
   state.numberX = 50;
-  state.logoX = 50;
+  // Centre logos too
+  var digitCount = state.logos.length;
+  if (digitCount > 0) {
+    var spacing = digitCount > 1 ? 60 / digitCount : 0;
+    var startX = 50 - (spacing * (digitCount - 1)) / 2;
+    for (var i = 0; i < digitCount; i++) {
+      state.logos[i].x = startX + i * spacing;
+    }
+  }
   render();
 }
 
@@ -867,39 +906,23 @@ function getCanvasPos(e) {
   };
 }
 
-// Get the bounding area of the logo group
-function getLogoBounds() {
-  if (!state.logoImage || state.number.length === 0) return null;
-
-  var w = state.width;
-  var h = state.height;
-  var logoH = (state.logoSize / 100) * h;
-  var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-  var logoGroupX = (state.logoX / 100) * w;
-  var logoGroupY = (state.logoY / 100) * h;
-  var digitCount = state.number.length;
-
-  // The total width of all logos with spacing
-  var totalLogoGroupWidth = logoW * digitCount + state.numberSpacing * (digitCount - 1);
-
-  return {
-    x: logoGroupX - totalLogoGroupWidth / 2 - 15,
-    y: logoGroupY - logoH / 2 - 15,
-    w: totalLogoGroupWidth + 30,
-    h: logoH + 30
-  };
-}
-
 // Hit test
 function hitTest(px, py) {
   var w = state.width;
   var h = state.height;
 
-  // Logo group hit area (check first)
+  // Check logos first (they're smallest, most precise targets)
   if (state.logoImage) {
-    var bounds = getLogoBounds();
-    if (bounds && px > bounds.x && px < bounds.x + bounds.w && py > bounds.y && py < bounds.y + bounds.h) {
-      return 'logo';
+    var logoH = (state.logoSize / 100) * h;
+    var logoW = logoH * (state.logoImage.width / state.logoImage.height);
+
+    for (var i = state.logos.length - 1; i >= 0; i--) {
+      var lx = (state.logos[i].x / 100) * w;
+      var ly = (state.logos[i].y / 100) * h;
+      if (px > lx - logoW/2 - 15 && px < lx + logoW/2 + 15 &&
+          py > ly - logoH/2 - 15 && py < ly + logoH/2 + 15) {
+        return 'logo-' + i;
+      }
     }
   }
 
@@ -944,8 +967,15 @@ function startDrag(e) {
   if (target) {
     drag.active = true;
     drag.target = target;
-    drag.offsetX = pos.x - (state[target + 'X'] / 100) * state.width;
-    drag.offsetY = pos.y - (state[target + 'Y'] / 100) * state.height;
+
+    if (target.startsWith('logo-')) {
+      var idx = parseInt(target.split('-')[1]);
+      drag.offsetX = pos.x - (state.logos[idx].x / 100) * state.width;
+      drag.offsetY = pos.y - (state.logos[idx].y / 100) * state.height;
+    } else {
+      drag.offsetX = pos.x - (state[target + 'X'] / 100) * state.width;
+      drag.offsetY = pos.y - (state[target + 'Y'] / 100) * state.height;
+    }
   }
 }
 
@@ -976,8 +1006,15 @@ function moveDrag(e) {
     finalY = centerY;
   }
 
-  state[drag.target + 'X'] = (finalX / state.width) * 100;
-  state[drag.target + 'Y'] = (finalY / state.height) * 100;
+  // Apply position
+  if (drag.target.startsWith('logo-')) {
+    var idx = parseInt(drag.target.split('-')[1]);
+    state.logos[idx].x = (finalX / state.width) * 100;
+    state.logos[idx].y = (finalY / state.height) * 100;
+  } else {
+    state[drag.target + 'X'] = (finalX / state.width) * 100;
+    state[drag.target + 'Y'] = (finalY / state.height) * 100;
+  }
 
   render();
 }
@@ -992,8 +1029,7 @@ function endDrag() {
 
 // Draw text with letter spacing
 function drawTextWithSpacing(text, x, y, spacing, align) {
-  if (!text) return [];
-  var positions = [];
+  if (!text) return;
 
   if (spacing === 0) {
     ctx.textAlign = align || 'center';
@@ -1002,17 +1038,7 @@ function drawTextWithSpacing(text, x, y, spacing, align) {
       ctx.strokeText(text, x, y);
     }
     ctx.fillText(text, x, y);
-
-    // Calculate character center positions
-    var chars = text.split('');
-    var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
-    var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0);
-    var startX = x - totalWidth / 2;
-    chars.forEach(function(char, i) {
-      positions.push(startX + charWidths[i] / 2);
-      startX += charWidths[i];
-    });
-    return positions;
+    return;
   }
 
   var chars = text.split('');
@@ -1028,11 +1054,8 @@ function drawTextWithSpacing(text, x, y, spacing, align) {
       ctx.strokeText(char, startX, y);
     }
     ctx.fillText(char, startX, y);
-    positions.push(startX + charWidths[i] / 2);
     startX += charWidths[i] + spacing;
   });
-
-  return positions;
 }
 
 // Draw arced text with letter spacing and outline
@@ -1191,34 +1214,17 @@ function render() {
   var numX = (state.numberX / 100) * w;
   var numY = (state.numberY / 100) * h;
 
-  lastDigitPositions = drawTextWithSpacing(state.number, numX, numY, state.numberSpacing, 'center');
+  drawTextWithSpacing(state.number, numX, numY, state.numberSpacing, 'center');
 
-  // Draw logos (one per digit, as a draggable group)
-  if (state.logoImage && state.number.length > 0) {
+  // Draw logos (each independently positioned)
+  if (state.logoImage) {
     var logoH = (state.logoSize / 100) * h;
     var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-    var logoGroupX = (state.logoX / 100) * w;
-    var logoGroupY = (state.logoY / 100) * h;
 
-    // Calculate spacing to match number spacing
-    var digitCount = state.number.length;
-
-    // Compute per-digit X offsets relative to center of group
-    // Each logo is spaced like the digits
-    var digitCharWidths = [];
-    for (var di = 0; di < digitCount; di++) {
-      digitCharWidths.push(ctx.measureText(state.number[di]).width);
-    }
-    var totalDigitWidth = digitCharWidths.reduce(function(a, b) { return a + b; }, 0) + state.numberSpacing * (digitCount - 1);
-
-    var logoStartX = logoGroupX - totalDigitWidth / 2;
-
-    for (var i = 0; i < digitCount; i++) {
-      var digitCenterX = logoStartX + digitCharWidths[i] / 2;
-      var logoDrawX = digitCenterX - logoW / 2;
-      var logoDrawY = logoGroupY - logoH / 2;
-      ctx.drawImage(state.logoImage, logoDrawX, logoDrawY, logoW, logoH);
-      logoStartX += digitCharWidths[i] + state.numberSpacing;
+    for (var i = 0; i < state.logos.length; i++) {
+      var lx = (state.logos[i].x / 100) * w - logoW / 2;
+      var ly = (state.logos[i].y / 100) * h - logoH / 2;
+      ctx.drawImage(state.logoImage, lx, ly, logoW, logoH);
     }
   }
 }
@@ -1372,11 +1378,9 @@ function generateSVG() {
 
   // Logos in SVG
   var logoElements = '';
-  if (state.logoImage && state.number.length > 0) {
+  if (state.logoImage && state.logos.length > 0) {
     var logoH = (state.logoSize / 100) * h;
     var logoW = logoH * (state.logoImage.width / state.logoImage.height);
-    var logoGroupX = (state.logoX / 100) * w;
-    var logoGroupY = (state.logoY / 100) * h;
 
     var tc = document.createElement('canvas');
     tc.width = state.logoImage.width;
@@ -1385,15 +1389,9 @@ function generateSVG() {
     tctx.drawImage(state.logoImage, 0, 0);
     var dataUrl = tc.toDataURL('image/png');
 
-    var digitCount = state.number.length;
-    var charWidth = numFontSize * 0.6;
-    var totalDigitWidth = charWidth * digitCount + state.numberSpacing * (digitCount - 1);
-    var logoStartX = logoGroupX - totalDigitWidth / 2;
-
-    for (var i = 0; i < digitCount; i++) {
-      var digitCenterX = logoStartX + charWidth / 2 + i * (charWidth + state.numberSpacing);
-      var lx = digitCenterX - logoW / 2;
-      var ly = logoGroupY - logoH / 2;
+    for (var i = 0; i < state.logos.length; i++) {
+      var lx = (state.logos[i].x / 100) * w - logoW / 2;
+      var ly = (state.logos[i].y / 100) * h - logoH / 2;
       logoElements += '<image href="' + dataUrl + '" x="' + lx + '" y="' + ly + '" width="' + logoW + '" height="' + logoH + '"/>';
     }
   }
@@ -1402,6 +1400,7 @@ function generateSVG() {
 }
 
 // Initial render
+syncLogos();
 render();
 </script>
 </body>
