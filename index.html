@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nameset Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #1a1a2e;
@@ -32,7 +32,7 @@
 
   .app {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 340px;
     grid-template-rows: auto 1fr;
     height: 100vh;
     gap: 0;
@@ -95,6 +95,11 @@
     display: block;
     max-width: 100%;
     height: auto;
+    cursor: grab;
+  }
+
+  canvas:active {
+    cursor: grabbing;
   }
 
   .panel {
@@ -345,6 +350,13 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .hint {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 4px 0;
+  }
+
   @media (max-width: 768px) {
     .app {
       grid-template-columns: 1fr;
@@ -389,25 +401,22 @@
         <label>Number</label>
         <input type="text" id="playerNumber" value="1" placeholder="1-99">
       </div>
-      <div class="field">
-        <label>Font</label>
-        <select id="fontSelect">
-          <option value="Anton">Anton (PL Classic)</option>
-          <option value="Bebas Neue">Bebas Neue</option>
-          <option value="Oswald">Oswald Bold</option>
-          <option value="Arial Black">Arial Black</option>
-          <option value="Impact">Impact</option>
-        </select>
-      </div>
     </div>
 
     <div class="panel-section">
       <h3>Colors</h3>
       <div class="field">
-        <label>Text Color</label>
+        <label>Fill Color</label>
         <div class="color-field">
-          <input type="color" id="textColor" value="#000000">
-          <input type="text" id="textColorHex" value="#000000" maxlength="7">
+          <input type="color" id="fillColor" value="#1a1a4e">
+          <input type="text" id="fillColorHex" value="#1a1a4e" maxlength="7">
+        </div>
+      </div>
+      <div class="field">
+        <label>Outline Color</label>
+        <div class="color-field">
+          <input type="color" id="outlineColor" value="#ffffff">
+          <input type="text" id="outlineColorHex" value="#ffffff" maxlength="7">
         </div>
       </div>
       <div class="field">
@@ -420,6 +429,10 @@
       <div class="toggle-row">
         <label>Transparent Background</label>
         <div class="toggle active" id="transparentToggle"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Show Outline</label>
+        <div class="toggle active" id="outlineToggle"></div>
       </div>
     </div>
 
@@ -439,19 +452,20 @@
 
     <div class="panel-section">
       <h3>Layout</h3>
+      <p class="hint">Drag name and number on canvas to reposition. Snaps to grid.</p>
       <div class="slider-field">
         <div class="slider-header">
           <label>Name Arc</label>
-          <span id="arcValue">30&deg;</span>
+          <span id="arcValue">25&deg;</span>
         </div>
-        <input type="range" id="nameArc" min="0" max="80" value="30">
+        <input type="range" id="nameArc" min="0" max="80" value="25">
       </div>
       <div class="slider-field">
         <div class="slider-header">
           <label>Name Size</label>
-          <span id="nameSizeValue">14%</span>
+          <span id="nameSizeValue">13%</span>
         </div>
-        <input type="range" id="nameSize" min="6" max="30" value="14">
+        <input type="range" id="nameSize" min="6" max="30" value="13">
       </div>
       <div class="slider-field">
         <div class="slider-header">
@@ -462,17 +476,21 @@
       </div>
       <div class="slider-field">
         <div class="slider-header">
-          <label>Name Position</label>
-          <span id="namePosValue">22%</span>
+          <label>Outline Thickness</label>
+          <span id="outlineThicknessValue">4%</span>
         </div>
-        <input type="range" id="namePos" min="10" max="45" value="22">
+        <input type="range" id="outlineThickness" min="1" max="12" value="4">
       </div>
       <div class="slider-field">
         <div class="slider-header">
-          <label>Number Position</label>
-          <span id="numberPosValue">58%</span>
+          <label>Grid Size</label>
+          <span id="gridSizeValue">20px</span>
         </div>
-        <input type="range" id="numberPos" min="35" max="85" value="58">
+        <input type="range" id="gridSize" min="5" max="50" value="20">
+      </div>
+      <div class="toggle-row">
+        <label>Show Grid</label>
+        <div class="toggle" id="gridToggle"></div>
       </div>
     </div>
 
@@ -490,25 +508,54 @@
 </div>
 
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const wrapper = document.getElementById('canvasWrapper');
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var wrapper = document.getElementById('canvasWrapper');
+
+// PL-style font: we load a custom font that matches the Premier League aesthetic
+// Using a web-safe fallback stack that's bold and condensed
+var PL_FONT = 'PLFont';
+
+// Load a custom font face that mimics PL nameset style (bold, condensed, blocky)
+var fontFace = new FontFace('PLFont', "url('https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8.woff2')", {
+  weight: 'normal',
+  style: 'normal'
+});
+fontFace.load().then(function(loaded) {
+  document.fonts.add(loaded);
+  render();
+});
 
 // State
-let state = {
+var state = {
   name: 'LAMMENS',
   number: '1',
-  font: 'Anton',
-  textColor: '#000000',
+  fillColor: '#1a1a4e',
+  outlineColor: '#ffffff',
   bgColor: '#ffffff',
   transparent: true,
+  showOutline: true,
   width: 800,
   height: 1000,
-  arc: 30,
-  nameSize: 14,
+  arc: 25,
+  nameSize: 13,
   numberSize: 55,
-  namePos: 22,
-  numberPos: 58
+  outlineThickness: 4,
+  gridSize: 20,
+  showGrid: false,
+  // Positions as percentage of canvas (center point)
+  nameX: 50,
+  nameY: 20,
+  numberX: 50,
+  numberY: 58
+};
+
+// Drag state
+var drag = {
+  active: false,
+  target: null, // 'name' or 'number'
+  offsetX: 0,
+  offsetY: 0
 };
 
 // Bind inputs
@@ -523,55 +570,52 @@ function bindInput(id, key, transform) {
 
 bindInput('playerName', 'name', function(v) { return v.toUpperCase(); });
 bindInput('playerNumber', 'number');
-bindInput('fontSelect', 'font');
 bindInput('nameArc', 'arc', Number);
 bindInput('nameSize', 'nameSize', Number);
 bindInput('numberSize', 'numberSize', Number);
-bindInput('namePos', 'namePos', Number);
-bindInput('numberPos', 'numberPos', Number);
+bindInput('outlineThickness', 'outlineThickness', Number);
+bindInput('gridSize', 'gridSize', Number);
 
-// Color sync
-var textColorPicker = document.getElementById('textColor');
-var textColorHex = document.getElementById('textColorHex');
-var bgColorPicker = document.getElementById('bgColor');
-var bgColorHex = document.getElementById('bgColorHex');
+// Color sync helper
+function syncColor(pickerId, hexId, stateKey) {
+  var picker = document.getElementById(pickerId);
+  var hex = document.getElementById(hexId);
 
-textColorPicker.addEventListener('input', function() {
-  state.textColor = textColorPicker.value;
-  textColorHex.value = textColorPicker.value;
-  render();
-});
-
-textColorHex.addEventListener('input', function() {
-  if (/^#[0-9a-fA-F]{6}$/.test(textColorHex.value)) {
-    state.textColor = textColorHex.value;
-    textColorPicker.value = textColorHex.value;
+  picker.addEventListener('input', function() {
+    state[stateKey] = picker.value;
+    hex.value = picker.value;
     render();
-  }
-});
+  });
 
-bgColorPicker.addEventListener('input', function() {
-  state.bgColor = bgColorPicker.value;
-  bgColorHex.value = bgColorPicker.value;
-  render();
-});
+  hex.addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) {
+      state[stateKey] = hex.value;
+      picker.value = hex.value;
+      render();
+    }
+  });
+}
 
-bgColorHex.addEventListener('input', function() {
-  if (/^#[0-9a-fA-F]{6}$/.test(bgColorHex.value)) {
-    state.bgColor = bgColorHex.value;
-    bgColorPicker.value = bgColorHex.value;
+syncColor('fillColor', 'fillColorHex', 'fillColor');
+syncColor('outlineColor', 'outlineColorHex', 'outlineColor');
+syncColor('bgColor', 'bgColorHex', 'bgColor');
+
+// Toggles
+function setupToggle(id, stateKey, extraFn) {
+  var el = document.getElementById(id);
+  el.addEventListener('click', function() {
+    state[stateKey] = !state[stateKey];
+    el.classList.toggle('active', state[stateKey]);
+    if (extraFn) extraFn();
     render();
-  }
-});
+  });
+}
 
-// Transparent toggle
-var transparentToggle = document.getElementById('transparentToggle');
-transparentToggle.addEventListener('click', function() {
-  state.transparent = !state.transparent;
-  transparentToggle.classList.toggle('active', state.transparent);
+setupToggle('transparentToggle', 'transparent', function() {
   wrapper.classList.toggle('transparent-bg', state.transparent);
-  render();
 });
+setupToggle('outlineToggle', 'showOutline');
+setupToggle('gridToggle', 'showGrid');
 
 // Dimensions
 var widthInput = document.getElementById('canvasWidth');
@@ -604,18 +648,131 @@ document.getElementById('nameSize').addEventListener('input', function() {
 document.getElementById('numberSize').addEventListener('input', function() {
   document.getElementById('numberSizeValue').textContent = this.value + '%';
 });
-document.getElementById('namePos').addEventListener('input', function() {
-  document.getElementById('namePosValue').textContent = this.value + '%';
+document.getElementById('outlineThickness').addEventListener('input', function() {
+  document.getElementById('outlineThicknessValue').textContent = this.value + '%';
 });
-document.getElementById('numberPos').addEventListener('input', function() {
-  document.getElementById('numberPosValue').textContent = this.value + '%';
+document.getElementById('gridSize').addEventListener('input', function() {
+  document.getElementById('gridSizeValue').textContent = this.value + 'px';
 });
 
-// Draw arced text
-function drawArcText(text, centerX, centerY, radius, arcAngle) {
-  if (!text || arcAngle === 0) {
+// Snap to grid
+function snapToGrid(value, gridSize) {
+  return Math.round(value / gridSize) * gridSize;
+}
+
+// Get mouse/touch position relative to canvas
+function getCanvasPos(e) {
+  var rect = canvas.getBoundingClientRect();
+  var scaleX = state.width / rect.width;
+  var scaleY = state.height / rect.height;
+  var clientX, clientY;
+
+  if (e.touches) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+// Hit test: check if point is near name or number
+function hitTest(px, py) {
+  var w = state.width;
+  var h = state.height;
+
+  // Number hit area
+  var numX = (state.numberX / 100) * w;
+  var numY = (state.numberY / 100) * h;
+  var numFontSize = (state.numberSize / 100) * h;
+  var numHalfW = numFontSize * 0.8;
+  var numHalfH = numFontSize * 0.6;
+
+  if (px > numX - numHalfW && px < numX + numHalfW && py > numY - numHalfH && py < numY + numHalfH) {
+    return 'number';
+  }
+
+  // Name hit area
+  var nameX = (state.nameX / 100) * w;
+  var nameY = (state.nameY / 100) * h;
+  var nameFontSize = (state.nameSize / 100) * w;
+  var nameHalfW = state.name.length * nameFontSize * 0.4;
+  var nameHalfH = nameFontSize * 0.8;
+
+  if (px > nameX - nameHalfW && px < nameX + nameHalfW && py > nameY - nameHalfH && py < nameY + nameHalfH) {
+    return 'name';
+  }
+
+  return null;
+}
+
+// Drag handlers
+canvas.addEventListener('mousedown', startDrag);
+canvas.addEventListener('touchstart', startDrag);
+document.addEventListener('mousemove', moveDrag);
+document.addEventListener('touchmove', moveDrag);
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchend', endDrag);
+
+function startDrag(e) {
+  e.preventDefault();
+  var pos = getCanvasPos(e);
+  var target = hitTest(pos.x, pos.y);
+
+  if (target) {
+    drag.active = true;
+    drag.target = target;
+    drag.offsetX = pos.x - (state[target + 'X'] / 100) * state.width;
+    drag.offsetY = pos.y - (state[target + 'Y'] / 100) * state.height;
+  }
+}
+
+function moveDrag(e) {
+  if (!drag.active) return;
+  e.preventDefault();
+
+  var pos = getCanvasPos(e);
+  var rawX = pos.x - drag.offsetX;
+  var rawY = pos.y - drag.offsetY;
+
+  // Snap to grid
+  var grid = state.gridSize;
+  var snappedX = snapToGrid(rawX, grid);
+  var snappedY = snapToGrid(rawY, grid);
+
+  // Always snap X to center (50%) if within threshold
+  var centerX = state.width / 2;
+  if (Math.abs(snappedX - centerX) < grid * 1.5) {
+    snappedX = centerX;
+  }
+
+  // Convert back to percentage
+  state[drag.target + 'X'] = (snappedX / state.width) * 100;
+  state[drag.target + 'Y'] = (snappedY / state.height) * 100;
+
+  render();
+}
+
+function endDrag(e) {
+  drag.active = false;
+  drag.target = null;
+}
+
+// Draw arced text with outline
+function drawArcText(text, centerX, centerY, radius, arcAngle, fontSize) {
+  if (!text) return;
+
+  if (arcAngle === 0) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    if (state.showOutline) {
+      ctx.strokeText(text, centerX, centerY);
+    }
     ctx.fillText(text, centerX, centerY);
     return;
   }
@@ -623,14 +780,10 @@ function drawArcText(text, centerX, centerY, radius, arcAngle) {
   var totalAngle = (arcAngle * Math.PI) / 180;
   var chars = text.split('');
 
-  // Measure total width to distribute chars evenly
   var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
   var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0);
 
-  // Angle per unit width
   var anglePerWidth = totalAngle / totalWidth;
-
-  // Start angle (centered)
   var currentAngle = -Math.PI / 2 - totalAngle / 2;
 
   ctx.textAlign = 'center';
@@ -646,11 +799,62 @@ function drawArcText(text, centerX, centerY, radius, arcAngle) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(currentAngle + Math.PI / 2);
+    if (state.showOutline) {
+      ctx.strokeText(char, 0, 0);
+    }
     ctx.fillText(char, 0, 0);
     ctx.restore();
 
     currentAngle += halfCharAngle;
   });
+}
+
+// Draw grid overlay
+function drawGrid() {
+  if (!state.showGrid) return;
+
+  var w = state.width;
+  var h = state.height;
+  var grid = state.gridSize;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(100, 150, 255, 0.15)';
+  ctx.lineWidth = 1;
+
+  // Vertical lines
+  for (var x = grid; x < w; x += grid) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
+  }
+
+  // Horizontal lines
+  for (var y = grid; y < h; y += grid) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+
+  // Center lines (stronger)
+  ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 4]);
+
+  // Vertical center
+  ctx.beginPath();
+  ctx.moveTo(w / 2, 0);
+  ctx.lineTo(w / 2, h);
+  ctx.stroke();
+
+  // Horizontal center
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 // Main render
@@ -665,13 +869,24 @@ function render() {
     ctx.fillRect(0, 0, w, h);
   }
 
-  ctx.fillStyle = state.textColor;
+  // Draw grid (only visible on screen, not in export)
+  drawGrid();
+
+  // Configure text style
+  var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
+
+  ctx.fillStyle = state.fillColor;
+  ctx.strokeStyle = state.outlineColor;
+  ctx.lineWidth = outlineWidth;
+  ctx.lineJoin = 'round';
+  ctx.miterLimit = 2;
 
   // Draw name (arced)
   var nameFontSize = (state.nameSize / 100) * w;
-  ctx.font = 'bold ' + nameFontSize + 'px "' + state.font + '", sans-serif';
+  ctx.font = nameFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
 
-  var nameY = (state.namePos / 100) * h;
+  var nameX = (state.nameX / 100) * w;
+  var nameY = (state.nameY / 100) * h;
 
   if (state.arc > 0) {
     var textWidth = ctx.measureText(state.name).width;
@@ -679,25 +894,41 @@ function render() {
     var radius = textWidth / arcRad * 1.2;
     var arcCenterY = nameY + radius;
 
-    drawArcText(state.name, w / 2, arcCenterY, radius, state.arc);
+    drawArcText(state.name, nameX, arcCenterY, radius, state.arc, nameFontSize);
   } else {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(state.name, w / 2, nameY);
+    if (state.showOutline) {
+      ctx.strokeText(state.name, nameX, nameY);
+    }
+    ctx.fillText(state.name, nameX, nameY);
   }
 
   // Draw number
   var numFontSize = (state.numberSize / 100) * h;
-  ctx.font = 'bold ' + numFontSize + 'px "' + state.font + '", sans-serif';
+  ctx.font = numFontSize + 'px "PLFont", "Anton", "Impact", "Arial Black", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  var numY = (state.numberPos / 100) * h;
-  ctx.fillText(state.number, w / 2, numY);
+  var numX = (state.numberX / 100) * w;
+  var numY = (state.numberY / 100) * h;
+
+  // Recalculate outline for number (proportional to number size)
+  ctx.lineWidth = outlineWidth * 1.2;
+
+  if (state.showOutline) {
+    ctx.strokeText(state.number, numX, numY);
+  }
+  ctx.fillText(state.number, numX, numY);
 }
 
-// Export
+// Export (without grid)
 function exportImage(format) {
+  // Temporarily hide grid for export
+  var gridWasVisible = state.showGrid;
+  state.showGrid = false;
+  render();
+
   var link = document.createElement('a');
   var name = state.name || 'nameset';
   var num = state.number || '';
@@ -713,7 +944,6 @@ function exportImage(format) {
     if (format === 'jpeg') mimeType = 'image/jpeg';
     if (format === 'webp') mimeType = 'image/webp';
 
-    // For JPEG, add white bg if transparent
     if (format === 'jpeg' && state.transparent) {
       var tempCanvas = document.createElement('canvas');
       tempCanvas.width = state.width;
@@ -732,11 +962,16 @@ function exportImage(format) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Restore grid
+  state.showGrid = gridWasVisible;
+  render();
 }
 
 function generateSVG() {
   var w = state.width;
   var h = state.height;
+  var outlineWidth = (state.outlineThickness / 100) * Math.min(w, h);
 
   var bgRect = '';
   if (!state.transparent) {
@@ -745,18 +980,23 @@ function generateSVG() {
 
   var nameFontSize = (state.nameSize / 100) * w;
   var numFontSize = (state.numberSize / 100) * h;
-  var nameY = (state.namePos / 100) * h;
-  var numY = (state.numberPos / 100) * h;
+  var nameX = (state.nameX / 100) * w;
+  var nameY = (state.nameY / 100) * h;
+  var numX = (state.numberX / 100) * w;
+  var numY = (state.numberY / 100) * h;
+
+  var strokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + outlineWidth + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
+  var numStrokeAttr = state.showOutline ? ' stroke="' + state.outlineColor + '" stroke-width="' + (outlineWidth * 1.2) + '" stroke-linejoin="round" paint-order="stroke fill"' : '';
 
   var nameElement = '';
   if (state.arc > 0 && state.name) {
-    var textWidth = nameFontSize * state.name.length * 0.65;
+    var textWidth = nameFontSize * state.name.length * 0.6;
     var arcRad = (state.arc * Math.PI) / 180;
     var radius = textWidth / arcRad * 1.2;
 
     var startAngle = -Math.PI / 2 - arcRad / 2;
     var endAngle = -Math.PI / 2 + arcRad / 2;
-    var cx = w / 2;
+    var cx = nameX;
     var cy = nameY + radius;
 
     var x1 = cx + radius * Math.cos(startAngle);
@@ -767,13 +1007,13 @@ function generateSVG() {
     var largeArc = arcRad > Math.PI ? 1 : 0;
 
     nameElement = '<defs><path id="namePath" d="M ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + '"/></defs>' +
-      '<text font-family="' + state.font + ', sans-serif" font-size="' + nameFontSize + '" font-weight="bold" fill="' + state.textColor + '">' +
+      '<text font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + '>' +
       '<textPath href="#namePath" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
   } else {
-    nameElement = '<text x="' + (w / 2) + '" y="' + nameY + '" font-family="' + state.font + ', sans-serif" font-size="' + nameFontSize + '" font-weight="bold" fill="' + state.textColor + '" text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
+    nameElement = '<text x="' + nameX + '" y="' + nameY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + nameFontSize + '" fill="' + state.fillColor + '"' + strokeAttr + ' text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
   }
 
-  var numberElement = '<text x="' + (w / 2) + '" y="' + numY + '" font-family="' + state.font + ', sans-serif" font-size="' + numFontSize + '" font-weight="bold" fill="' + state.textColor + '" text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
+  var numberElement = '<text x="' + numX + '" y="' + numY + '" font-family="Anton, Impact, Arial Black, sans-serif" font-size="' + numFontSize + '" fill="' + state.fillColor + '"' + numStrokeAttr + ' text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
 
   return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n  ' + bgRect + '\n  ' + nameElement + '\n  ' + numberElement + '\n</svg>';
 }
