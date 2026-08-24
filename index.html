@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nameset Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #242440;
+    --surface-raised: #2e2e4a;
+    --border: #3a3a5c;
+    --text: #e8e8f0;
+    --text-dim: #8888a8;
+    --accent: #4caf7c;
+    --accent-hover: #5cc98e;
+    --canvas-checker: #d8d8d8;
+    --canvas-checker-alt: #f0f0f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    gap: 0;
+  }
+
+  .header {
+    grid-column: 1 / -1;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .header .badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .canvas-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    position: relative;
+    overflow: auto;
+  }
+
+  .canvas-wrapper {
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .canvas-wrapper.transparent-bg {
+    background-image:
+      linear-gradient(45deg, var(--canvas-checker) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--canvas-checker) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--canvas-checker) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--canvas-checker) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+
+  canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .panel {
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .panel-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-section h3 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  .field input[type="text"],
+  .field input[type="number"],
+  .field select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 0.875rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 150ms ease-out;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--accent);
+  }
+
+  .field input[type="number"] {
+    width: 100%;
+  }
+
+  .row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .row .field {
+    flex: 1;
+  }
+
+  .color-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-field input[type="color"] {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 2px;
+    background: var(--surface);
+  }
+
+  .color-field input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  .color-field input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+  }
+
+  .color-field input[type="text"] {
+    flex: 1;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .toggle-row label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  .toggle {
+    width: 40px;
+    height: 22px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    position: relative;
+    transition: background 200ms ease-out;
+  }
+
+  .toggle.active {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: var(--text);
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 200ms ease-out;
+  }
+
+  .toggle.active::after {
+    transform: translateX(18px);
+  }
+
+  .slider-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .slider-field .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slider-field .slider-header label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dim);
+  }
+
+  .slider-field .slider-header span {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slider-field input[type="range"] {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--surface-raised);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .slider-field input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .export-section {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .export-section h3 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .export-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease-out;
+    text-align: center;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1a2e;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+  }
+
+  .btn-secondary {
+    background: var(--surface-raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .dimensions-display {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 4px 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 768px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto;
+      height: auto;
+      min-height: 100vh;
+    }
+
+    .panel {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      max-height: 50vh;
+    }
+
+    .canvas-area {
+      min-height: 300px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1>Nameset Generator</h1>
+    <span class="badge">Decal Tool</span>
+  </header>
+
+  <div class="canvas-area">
+    <div class="canvas-wrapper transparent-bg" id="canvasWrapper">
+      <canvas id="canvas" width="800" height="1000"></canvas>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="panel-section">
+      <h3>Text</h3>
+      <div class="field">
+        <label>Player Name</label>
+        <input type="text" id="playerName" value="LAMMENS" placeholder="SURNAME">
+      </div>
+      <div class="field">
+        <label>Number</label>
+        <input type="text" id="playerNumber" value="1" placeholder="1-99">
+      </div>
+      <div class="field">
+        <label>Font</label>
+        <select id="fontSelect">
+          <option value="Anton">Anton (PL Classic)</option>
+          <option value="Bebas Neue">Bebas Neue</option>
+          <option value="Oswald">Oswald Bold</option>
+          <option value="Arial Black">Arial Black</option>
+          <option value="Impact">Impact</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Colors</h3>
+      <div class="field">
+        <label>Text Color</label>
+        <div class="color-field">
+          <input type="color" id="textColor" value="#000000">
+          <input type="text" id="textColorHex" value="#000000" maxlength="7">
+        </div>
+      </div>
+      <div class="field">
+        <label>Background Color</label>
+        <div class="color-field">
+          <input type="color" id="bgColor" value="#ffffff">
+          <input type="text" id="bgColorHex" value="#ffffff" maxlength="7">
+        </div>
+      </div>
+      <div class="toggle-row">
+        <label>Transparent Background</label>
+        <div class="toggle active" id="transparentToggle"></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Dimensions</h3>
+      <div class="row">
+        <div class="field">
+          <label>Width (px)</label>
+          <input type="number" id="canvasWidth" value="800" min="200" max="4000" step="50">
+        </div>
+        <div class="field">
+          <label>Height (px)</label>
+          <input type="number" id="canvasHeight" value="1000" min="200" max="4000" step="50">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Layout</h3>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Name Arc</label>
+          <span id="arcValue">30&deg;</span>
+        </div>
+        <input type="range" id="nameArc" min="0" max="80" value="30">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Name Size</label>
+          <span id="nameSizeValue">14%</span>
+        </div>
+        <input type="range" id="nameSize" min="6" max="30" value="14">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Number Size</label>
+          <span id="numberSizeValue">55%</span>
+        </div>
+        <input type="range" id="numberSize" min="30" max="80" value="55">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Name Position</label>
+          <span id="namePosValue">22%</span>
+        </div>
+        <input type="range" id="namePos" min="10" max="45" value="22">
+      </div>
+      <div class="slider-field">
+        <div class="slider-header">
+          <label>Number Position</label>
+          <span id="numberPosValue">58%</span>
+        </div>
+        <input type="range" id="numberPos" min="35" max="85" value="58">
+      </div>
+    </div>
+
+    <div class="export-section">
+      <h3>Export</h3>
+      <div class="dimensions-display" id="dimDisplay">800 &times; 1000 px</div>
+      <div class="export-buttons">
+        <button class="btn btn-primary" onclick="exportImage('png')">PNG</button>
+        <button class="btn btn-secondary" onclick="exportImage('jpeg')">JPEG</button>
+        <button class="btn btn-secondary" onclick="exportImage('webp')">WebP</button>
+        <button class="btn btn-secondary" onclick="exportImage('svg')">SVG</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const wrapper = document.getElementById('canvasWrapper');
+
+// State
+let state = {
+  name: 'LAMMENS',
+  number: '1',
+  font: 'Anton',
+  textColor: '#000000',
+  bgColor: '#ffffff',
+  transparent: true,
+  width: 800,
+  height: 1000,
+  arc: 30,
+  nameSize: 14,
+  numberSize: 55,
+  namePos: 22,
+  numberPos: 58
+};
+
+// Bind inputs
+function bindInput(id, key, transform) {
+  transform = transform || function(v) { return v; };
+  var el = document.getElementById(id);
+  el.addEventListener('input', function() {
+    state[key] = transform(el.value);
+    render();
+  });
+}
+
+bindInput('playerName', 'name', function(v) { return v.toUpperCase(); });
+bindInput('playerNumber', 'number');
+bindInput('fontSelect', 'font');
+bindInput('nameArc', 'arc', Number);
+bindInput('nameSize', 'nameSize', Number);
+bindInput('numberSize', 'numberSize', Number);
+bindInput('namePos', 'namePos', Number);
+bindInput('numberPos', 'numberPos', Number);
+
+// Color sync
+var textColorPicker = document.getElementById('textColor');
+var textColorHex = document.getElementById('textColorHex');
+var bgColorPicker = document.getElementById('bgColor');
+var bgColorHex = document.getElementById('bgColorHex');
+
+textColorPicker.addEventListener('input', function() {
+  state.textColor = textColorPicker.value;
+  textColorHex.value = textColorPicker.value;
+  render();
+});
+
+textColorHex.addEventListener('input', function() {
+  if (/^#[0-9a-fA-F]{6}$/.test(textColorHex.value)) {
+    state.textColor = textColorHex.value;
+    textColorPicker.value = textColorHex.value;
+    render();
+  }
+});
+
+bgColorPicker.addEventListener('input', function() {
+  state.bgColor = bgColorPicker.value;
+  bgColorHex.value = bgColorPicker.value;
+  render();
+});
+
+bgColorHex.addEventListener('input', function() {
+  if (/^#[0-9a-fA-F]{6}$/.test(bgColorHex.value)) {
+    state.bgColor = bgColorHex.value;
+    bgColorPicker.value = bgColorHex.value;
+    render();
+  }
+});
+
+// Transparent toggle
+var transparentToggle = document.getElementById('transparentToggle');
+transparentToggle.addEventListener('click', function() {
+  state.transparent = !state.transparent;
+  transparentToggle.classList.toggle('active', state.transparent);
+  wrapper.classList.toggle('transparent-bg', state.transparent);
+  render();
+});
+
+// Dimensions
+var widthInput = document.getElementById('canvasWidth');
+var heightInput = document.getElementById('canvasHeight');
+var dimDisplay = document.getElementById('dimDisplay');
+
+widthInput.addEventListener('change', function() {
+  state.width = Math.max(200, Math.min(4000, Number(widthInput.value)));
+  widthInput.value = state.width;
+  canvas.width = state.width;
+  dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px';
+  render();
+});
+
+heightInput.addEventListener('change', function() {
+  state.height = Math.max(200, Math.min(4000, Number(heightInput.value)));
+  heightInput.value = state.height;
+  canvas.height = state.height;
+  dimDisplay.textContent = state.width + ' \u00d7 ' + state.height + ' px';
+  render();
+});
+
+// Slider value displays
+document.getElementById('nameArc').addEventListener('input', function() {
+  document.getElementById('arcValue').textContent = this.value + '\u00b0';
+});
+document.getElementById('nameSize').addEventListener('input', function() {
+  document.getElementById('nameSizeValue').textContent = this.value + '%';
+});
+document.getElementById('numberSize').addEventListener('input', function() {
+  document.getElementById('numberSizeValue').textContent = this.value + '%';
+});
+document.getElementById('namePos').addEventListener('input', function() {
+  document.getElementById('namePosValue').textContent = this.value + '%';
+});
+document.getElementById('numberPos').addEventListener('input', function() {
+  document.getElementById('numberPosValue').textContent = this.value + '%';
+});
+
+// Draw arced text
+function drawArcText(text, centerX, centerY, radius, arcAngle) {
+  if (!text || arcAngle === 0) {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, centerX, centerY);
+    return;
+  }
+
+  var totalAngle = (arcAngle * Math.PI) / 180;
+  var chars = text.split('');
+
+  // Measure total width to distribute chars evenly
+  var charWidths = chars.map(function(c) { return ctx.measureText(c).width; });
+  var totalWidth = charWidths.reduce(function(a, b) { return a + b; }, 0);
+
+  // Angle per unit width
+  var anglePerWidth = totalAngle / totalWidth;
+
+  // Start angle (centered)
+  var currentAngle = -Math.PI / 2 - totalAngle / 2;
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  chars.forEach(function(char, i) {
+    var halfCharAngle = (charWidths[i] / 2) * anglePerWidth;
+    currentAngle += halfCharAngle;
+
+    var x = centerX + radius * Math.cos(currentAngle);
+    var y = centerY + radius * Math.sin(currentAngle);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(currentAngle + Math.PI / 2);
+    ctx.fillText(char, 0, 0);
+    ctx.restore();
+
+    currentAngle += halfCharAngle;
+  });
+}
+
+// Main render
+function render() {
+  var w = state.width;
+  var h = state.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (!state.transparent) {
+    ctx.fillStyle = state.bgColor;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  ctx.fillStyle = state.textColor;
+
+  // Draw name (arced)
+  var nameFontSize = (state.nameSize / 100) * w;
+  ctx.font = 'bold ' + nameFontSize + 'px "' + state.font + '", sans-serif';
+
+  var nameY = (state.namePos / 100) * h;
+
+  if (state.arc > 0) {
+    var textWidth = ctx.measureText(state.name).width;
+    var arcRad = (state.arc * Math.PI) / 180;
+    var radius = textWidth / arcRad * 1.2;
+    var arcCenterY = nameY + radius;
+
+    drawArcText(state.name, w / 2, arcCenterY, radius, state.arc);
+  } else {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(state.name, w / 2, nameY);
+  }
+
+  // Draw number
+  var numFontSize = (state.numberSize / 100) * h;
+  ctx.font = 'bold ' + numFontSize + 'px "' + state.font + '", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  var numY = (state.numberPos / 100) * h;
+  ctx.fillText(state.number, w / 2, numY);
+}
+
+// Export
+function exportImage(format) {
+  var link = document.createElement('a');
+  var name = state.name || 'nameset';
+  var num = state.number || '';
+  var filename = (name + '_' + num).replace(/\s+/g, '_');
+
+  if (format === 'svg') {
+    var svg = generateSVG();
+    var blob = new Blob([svg], { type: 'image/svg+xml' });
+    link.href = URL.createObjectURL(blob);
+    link.download = filename + '.svg';
+  } else {
+    var mimeType = 'image/png';
+    if (format === 'jpeg') mimeType = 'image/jpeg';
+    if (format === 'webp') mimeType = 'image/webp';
+
+    // For JPEG, add white bg if transparent
+    if (format === 'jpeg' && state.transparent) {
+      var tempCanvas = document.createElement('canvas');
+      tempCanvas.width = state.width;
+      tempCanvas.height = state.height;
+      var tempCtx = tempCanvas.getContext('2d');
+      tempCtx.fillStyle = '#ffffff';
+      tempCtx.fillRect(0, 0, state.width, state.height);
+      tempCtx.drawImage(canvas, 0, 0);
+      link.href = tempCanvas.toDataURL(mimeType, 0.95);
+    } else {
+      link.href = canvas.toDataURL(mimeType, 0.95);
+    }
+    link.download = filename + '.' + format;
+  }
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function generateSVG() {
+  var w = state.width;
+  var h = state.height;
+
+  var bgRect = '';
+  if (!state.transparent) {
+    bgRect = '<rect width="' + w + '" height="' + h + '" fill="' + state.bgColor + '"/>';
+  }
+
+  var nameFontSize = (state.nameSize / 100) * w;
+  var numFontSize = (state.numberSize / 100) * h;
+  var nameY = (state.namePos / 100) * h;
+  var numY = (state.numberPos / 100) * h;
+
+  var nameElement = '';
+  if (state.arc > 0 && state.name) {
+    var textWidth = nameFontSize * state.name.length * 0.65;
+    var arcRad = (state.arc * Math.PI) / 180;
+    var radius = textWidth / arcRad * 1.2;
+
+    var startAngle = -Math.PI / 2 - arcRad / 2;
+    var endAngle = -Math.PI / 2 + arcRad / 2;
+    var cx = w / 2;
+    var cy = nameY + radius;
+
+    var x1 = cx + radius * Math.cos(startAngle);
+    var y1 = cy + radius * Math.sin(startAngle);
+    var x2 = cx + radius * Math.cos(endAngle);
+    var y2 = cy + radius * Math.sin(endAngle);
+
+    var largeArc = arcRad > Math.PI ? 1 : 0;
+
+    nameElement = '<defs><path id="namePath" d="M ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + '"/></defs>' +
+      '<text font-family="' + state.font + ', sans-serif" font-size="' + nameFontSize + '" font-weight="bold" fill="' + state.textColor + '">' +
+      '<textPath href="#namePath" startOffset="50%" text-anchor="middle">' + state.name + '</textPath></text>';
+  } else {
+    nameElement = '<text x="' + (w / 2) + '" y="' + nameY + '" font-family="' + state.font + ', sans-serif" font-size="' + nameFontSize + '" font-weight="bold" fill="' + state.textColor + '" text-anchor="middle" dominant-baseline="middle">' + state.name + '</text>';
+  }
+
+  var numberElement = '<text x="' + (w / 2) + '" y="' + numY + '" font-family="' + state.font + ', sans-serif" font-size="' + numFontSize + '" font-weight="bold" fill="' + state.textColor + '" text-anchor="middle" dominant-baseline="middle">' + state.number + '</text>';
+
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">\n  ' + bgRect + '\n  ' + nameElement + '\n  ' + numberElement + '\n</svg>';
+}
+
+// Initial render
+render();
+</script>
+</body>
+</html>
